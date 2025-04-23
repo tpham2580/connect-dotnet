@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using RestAPI.Models;
+using RestAPI.Dtos;
+using RestAPI.Services;
 
 namespace RestAPI.Controllers;
 
@@ -7,5 +8,17 @@ namespace RestAPI.Controllers;
 [Route("api/[controller]")]
 public class ItemsController : ControllerBase
 {
-    private static readonly List<Item> Items = new();
+    private readonly IItemService _service;
+
+    public ItemsController(IItemService service)
+    {
+        _service = service;
+    }
+
+    [HttpGet("{id}")]
+    public ActionResult<ItemResponse> GetById(Guid id)
+    {
+        var item = _service.GetById(id);
+        return item is null ? NotFound() : Ok(item);
+    }
 }
