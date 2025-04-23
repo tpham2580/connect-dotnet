@@ -1,7 +1,7 @@
 {
   "version": 3,
   "targets": {
-    "net9.0": {
+    "net8.0": {
       "Google.Protobuf/3.27.0": {
         "type": "package",
         "compile": {
@@ -23,10 +23,10 @@
           "Grpc.Tools": "2.64.0"
         },
         "compile": {
-          "lib/net9.0/_._": {}
+          "lib/net8.0/_._": {}
         },
         "runtime": {
-          "lib/net9.0/_._": {}
+          "lib/net8.0/_._": {}
         }
       },
       "Grpc.AspNetCore.Server/2.64.0": {
@@ -35,12 +35,12 @@
           "Grpc.Net.Common": "2.64.0"
         },
         "compile": {
-          "lib/net9.0/Grpc.AspNetCore.Server.dll": {
+          "lib/net8.0/Grpc.AspNetCore.Server.dll": {
             "related": ".pdb;.xml"
           }
         },
         "runtime": {
-          "lib/net9.0/Grpc.AspNetCore.Server.dll": {
+          "lib/net8.0/Grpc.AspNetCore.Server.dll": {
             "related": ".pdb;.xml"
           }
         },
@@ -55,12 +55,12 @@
           "Grpc.Net.ClientFactory": "2.64.0"
         },
         "compile": {
-          "lib/net9.0/Grpc.AspNetCore.Server.ClientFactory.dll": {
+          "lib/net8.0/Grpc.AspNetCore.Server.ClientFactory.dll": {
             "related": ".pdb;.xml"
           }
         },
         "runtime": {
-          "lib/net9.0/Grpc.AspNetCore.Server.ClientFactory.dll": {
+          "lib/net8.0/Grpc.AspNetCore.Server.ClientFactory.dll": {
             "related": ".pdb;.xml"
           }
         },
@@ -789,7 +789,7 @@
     }
   },
   "projectFileDependencyGroups": {
-    "net9.0": [
+    "net8.0": [
       "Grpc.AspNetCore >= 2.64.0"
     ]
   },
@@ -809,15 +809,15 @@
         "/home/t/.nuget/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
-        "net9.0"
+        "net8.0"
       ],
       "sources": {
         "/usr/lib64/dotnet/library-packs": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
-        "net9.0": {
-          "targetAlias": "net9.0",
+        "net8.0": {
+          "targetAlias": "net8.0",
           "projectReferences": {}
         }
       },
@@ -834,8 +834,8 @@
       "SdkAnalysisLevel": "9.0.100"
     },
     "frameworks": {
-      "net9.0": {
-        "targetAlias": "net9.0",
+      "net8.0": {
+        "targetAlias": "net8.0",
         "dependencies": {
           "Grpc.AspNetCore": {
             "target": "Package",
@@ -853,6 +853,20 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
+        "downloadDependencies": [
+          {
+            "name": "Microsoft.AspNetCore.App.Ref",
+            "version": "[8.0.14, 8.0.14]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Host.linux-x64",
+            "version": "[8.0.14, 8.0.14]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Ref",
+            "version": "[8.0.14, 8.0.14]"
+          }
+        ],
         "frameworkReferences": {
           "Microsoft.AspNetCore.App": {
             "privateAssets": "none"

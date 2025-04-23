@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "UYS/qkxWzCs=",
+  "dgSpecHash": "ABZUviBxeX8=",
   "success": true,
   "projectFilePath": "/home/t/Projects/dotnet-webapi/MySolution/GrpcService/GrpcService.csproj",
   "expectedPackageFiles": [
@@ -21,7 +21,10 @@
     "/home/t/.nuget/packages/microsoft.extensions.options/6.0.0/microsoft.extensions.options.6.0.0.nupkg.sha512",
     "/home/t/.nuget/packages/microsoft.extensions.primitives/6.0.0/microsoft.extensions.primitives.6.0.0.nupkg.sha512",
     "/home/t/.nuget/packages/system.diagnostics.diagnosticsource/6.0.0/system.diagnostics.diagnosticsource.6.0.0.nupkg.sha512",
-    "/home/t/.nuget/packages/system.runtime.compilerservices.unsafe/6.0.0/system.runtime.compilerservices.unsafe.6.0.0.nupkg.sha512"
+    "/home/t/.nuget/packages/system.runtime.compilerservices.unsafe/6.0.0/system.runtime.compilerservices.unsafe.6.0.0.nupkg.sha512",
+    "/home/t/.nuget/packages/microsoft.netcore.app.ref/8.0.14/microsoft.netcore.app.ref.8.0.14.nupkg.sha512",
+    "/home/t/.nuget/packages/microsoft.aspnetcore.app.ref/8.0.14/microsoft.aspnetcore.app.ref.8.0.14.nupkg.sha512",
+    "/home/t/.nuget/packages/microsoft.netcore.app.host.linux-x64/8.0.14/microsoft.netcore.app.host.linux-x64.8.0.14.nupkg.sha512"
   ],
   "logs": []
 }

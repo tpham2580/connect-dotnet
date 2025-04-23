@@ -21,5 +21,6 @@
   </ImportGroup>
   <PropertyGroup Condition=" '$(ExcludeRestorePackageImports)' != 'true' ">
     <Pkgxunit_analyzers Condition=" '$(Pkgxunit_analyzers)' == '' ">/home/t/.nuget/packages/xunit.analyzers/1.16.0</Pkgxunit_analyzers>
+    <PkgGrpc_Tools Condition=" '$(PkgGrpc_Tools)' == '' ">/home/t/.nuget/packages/grpc.tools/2.64.0</PkgGrpc_Tools>
   </PropertyGroup>
 </Project>

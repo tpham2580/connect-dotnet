@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
@@ -14,8 +14,6 @@
     <PackageReference Include="Grpc.AspNetCore" Version="2.64.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Protobuf Include="../Shared/Protos/cache.proto" GrpcServices="Server">
-  </ItemGroup>
+  <!-- TODO: connect cache proto file and set GrpcServices as Server -->
 
 </Project>

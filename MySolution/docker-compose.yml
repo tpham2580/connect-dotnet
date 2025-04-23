@@ -1,0 +1,27 @@
+services:
+  restapi:
+    build:
+      context: .
+      dockerfile: RestAPI/Dockerfile
+    ports:
+      - "5000:5000"
+    depends_on:
+      - grpcservice
+    environment:
+      - ASPNETCORE_URLS=http://+:5000
+
+  grpcservice:
+    build:
+      context: .
+      dockerfile: GrpcService/Dockerfile
+    ports:
+      - "6000:6000"
+    depends_on:
+      - redis
+    environment:
+      - ASPNETCORE_URLS=http://+:6000
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
