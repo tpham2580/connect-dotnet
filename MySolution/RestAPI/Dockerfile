@@ -15,5 +15,25 @@ RUN dotnet publish -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
+
+RUN apt-get update && apt-get install -y \
+	# Edit/view files
+	vim \
+	# Test HTTP endpoints
+	curl \
+	# Use ps, top, kill
+	procps \
+	# Tools like netstat, ifconfig
+	net-tools \
+	# Allows ping testing
+	iputils-ping \
+	# Use dig, nslookup for DNS lookup
+	dnsutils \
+	# 	Pager for viewing logs cleanly
+	less \
+	# List open files & ports
+	lsof && \
+	rm -rf /var/lib/apt/lists/*
+
 COPY --from=build /app/publish .
 ENTRYPOINT ["dotnet", "RestAPI.dll"]
