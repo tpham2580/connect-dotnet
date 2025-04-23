@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+option csharp_namespace = "Shared";
+
+service CacheService {
+	rpc GetData (DataRequest) returns (DataResponse);
+}
+
+service DataRequest {
+	string key = 1;
+}
+
+service DataResponse {
+	string value = 1;
+}

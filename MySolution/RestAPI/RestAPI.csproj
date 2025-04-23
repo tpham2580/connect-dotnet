@@ -10,4 +10,8 @@
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.3" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Protobuf Include="../Shared/Protos/cache.proto" GrpcServices="Client" />
+  </ItemGroup>
+
 </Project>

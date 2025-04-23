@@ -14,4 +14,8 @@
     <PackageReference Include="Grpc.AspNetCore" Version="2.64.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Protobuf Include="../Shared/Protos/cache.proto" GrpcServices="Server">
+  </ItemGroup>
+
 </Project>
