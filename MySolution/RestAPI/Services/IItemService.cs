@@ -1,12 +1,14 @@
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using RestAPI.Dtos;
 
 namespace RestAPI.Services;
 
 public interface IItemService
 {
-    IEnumerable<ItemResponse> GetAll();
-    ItemResponse? GetById(Guid id);
-    ItemResponse Create(ItemRequest request);
-    bool Update(Guid id, ItemRequest request);
-    bool Delete(Guid id);
+    // IEnumerable<ItemResponse> GetAll();
+    Task<ItemResponse?> GetByIdAsync(Guid id);
+    // ItemResponse Create(ItemRequest request);
+    // bool Update(Guid id, ItemRequest request);
+    // bool Delete(Guid id);
 }
