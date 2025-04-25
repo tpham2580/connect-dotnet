@@ -3,14 +3,31 @@ namespace RestAPI.Services;
 
 public class LocationService : ILocationService
 {
-    public async Task<LocationResponse[]> GetNearbyAsync(LocationRequest request)
+    private readonly ILogger<LocationService> _logger;
+
+    public LocationService(ILogger<LocationService> logger)
+    {
+        _logger = logger;
+    }
+
+    public async Task<LocationListResponse> GetNearbyAsync(LocationRequest request)
     {
         // TODO: Set up gRPC Client. Using Mock data for now.
         await Task.Delay(50);
-        return new[]
+        var results = new List<LocationResponse>
         {
-            new LocationResponse { Name = "Mock Place A", DistanceMeters = 124.5 },
-            new LocationResponse { Name = "Mock Place B", DistanceMeters = 452.3 }
+            new() { BusinessId = 123, Name = "Mock Place A", DistanceMeters = 124.5 },
+            new() { BusinessId = 420, Name = "Mock Place B", DistanceMeters = 452.3 },
+            new() { BusinessId = 140, Name = "Mock Place C", DistanceMeters = 700.0 },
+        };
+
+        string resultsStr = "[ " + String.Join(", ", results.Select(o => o.ToString())) + " ]";
+        _logger.LogInformation("Results have been received. \n{results}", resultsStr);
+
+        return new LocationListResponse
+        {
+            Total = results.Count,
+            Businesses = results
         };
     }
 }

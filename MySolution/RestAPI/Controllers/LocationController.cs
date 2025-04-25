@@ -5,7 +5,7 @@ using RestAPI.Dtos;
 namespace RestAPI.Controllers;
 
 [ApiController]
-[Route("location")]
+[Route("v1/search")]
 public class LocationController : ControllerBase
 {
     private readonly ILocationService _locationService;
@@ -18,15 +18,25 @@ public class LocationController : ControllerBase
 
     }
 
-    [HttpPost]
-    public async Task<IActionResult> PostLocation([FromBody] LocationRequest request)
+    [HttpGet("nearby")]
+    public async Task<IActionResult> GetNearby(
+            [FromQuery] double latitude,
+            [FromQuery] double longitude,
+            [FromQuery] int radius = 5000)
     {
-        _logger.LogInformation("Received location: {Lat}, {Lng}", request.Latitude, request.Longitude);
+        _logger.LogInformation("Received location: {Lat}, {Lng}", latitude, longitude);
 
-        var results = await _locationService.GetNearbyAsync(request);
+        var request = new LocationRequest
+        {
+            Latitude = latitude,
+            Longitude = longitude,
+            Radius = radius
+        };
 
-        _logger.LogInformation("Returning {Count} nearby results", results.Length);
+        var response = await _locationService.GetNearbyAsync(request);
 
-        return Ok(results);
+        _logger.LogInformation("Returning nearby results: {Response}", response);
+
+        return Ok(response);
     }
 }

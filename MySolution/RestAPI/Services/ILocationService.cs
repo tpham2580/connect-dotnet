@@ -3,5 +3,5 @@ using RestAPI.Dtos;
 
 public interface ILocationService
 {
-    Task<LocationResponse[]> GetNearbyAsync(LocationRequest request);
+    Task<LocationListResponse> GetNearbyAsync(LocationRequest request);
 }
