@@ -12,6 +12,8 @@ public class LocationService : ILocationService
 
     public async Task<LocationListResponse> GetNearbyAsync(LocationRequest request)
     {
+        _logger.LogInformation("Request has been received: \n{request}", request.ToString());
+
         // TODO: Set up gRPC Client. Using Mock data for now.
         await Task.Delay(50);
         var results = new List<LocationResponse>
@@ -22,7 +24,7 @@ public class LocationService : ILocationService
         };
 
         string resultsStr = "[ " + String.Join(", ", results.Select(o => o.ToString())) + " ]";
-        _logger.LogInformation("Results have been received. \n{results}", resultsStr);
+        _logger.LogInformation("Result has been received: \n{results}", resultsStr);
 
         return new LocationListResponse
         {
