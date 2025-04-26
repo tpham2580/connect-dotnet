@@ -19,7 +19,15 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
 {
     // resolves to "redis:6379" when run with the compose file below
     var cs = builder.Configuration.GetConnectionString("Redis")!;
-    return ConnectionMultiplexer.Connect(cs);
+    var redisPassword = builder.Configuration["REDIS_PASSWORD"];
+
+    var options = ConfigurationOptions.Parse(cs);
+    if (!string.IsNullOrEmpty(redisPassword))
+    {
+        options.Password = redisPassword;
+    }
+
+    return ConnectionMultiplexer.Connect(options);
 });
 
 // Services
