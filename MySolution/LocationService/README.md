@@ -10,12 +10,7 @@ grpcurl -plaintext \
   location.v1.LocationService/GetNearbyBusinesses
 ```
 
-## Functional
-
-- [] Search for locations within provided radius
-- [] Add location
-
-### TODO
+## TODO
 
 - [x] Connect service to Redis Geospatial index
-- [] Add calls to interact with Redis
+- [] Add calls to interact with Redis (GEOADD, GEOSEARCH)
