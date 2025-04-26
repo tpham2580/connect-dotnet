@@ -28,3 +28,18 @@ services:
     image: redis/redis-stack:latest
     ports:
       - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: ["redis-server", "--save", "60", "1", "--dir", "/data", "--requirepass", "${REDIS_PASSWORD}"]  # Save every 60s or 1 key change
+
+  redis-seeder:
+    build: 
+      context: ./redis
+    depends_on:
+      - redis
+    environment: 
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    entrypoint: ["/bin/sh", "/seed-redis.sh"]
+
+volumes:
+  redis-data: 
