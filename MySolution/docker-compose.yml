@@ -6,24 +6,25 @@ services:
     ports:
       - "5000:5000"
     depends_on:
-      - grpcservice
+      - locationservice
     environment:
       - ASPNETCORE_URLS=http://+:5000
     image: tpham2580/connect-dotnet-restapi
 
-  grpcservice:
+  locationservice:
     build:
       context: .
-      dockerfile: GrpcService/Dockerfile
+      dockerfile: LocationService/Dockerfile
     ports:
       - "6000:6000"
     depends_on:
       - redis
     environment:
       - ASPNETCORE_URLS=http://+:6000
-    image: tpham2580/connect-dotnet-grpcservice
+      - ConnectionStrings__Redis=redis:6379
+    image: tpham2580/connect-dotnet-locationservice
 
   redis:
-    image: redis:alpine
+    image: redis/redis-stack:latest
     ports:
       - "6379:6379"
