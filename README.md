@@ -7,8 +7,7 @@ This project is built using **.NET 8** and follows a modern microservice archite
 
 Run locally
 ```bash
-docker-compose build
-docker-compose up
+docker-compose up --build
 ```
 
 
