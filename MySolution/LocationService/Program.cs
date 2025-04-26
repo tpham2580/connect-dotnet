@@ -5,7 +5,7 @@ using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Loggin
+// Logging
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
     .WriteTo.File("Logs/location-log-.txt",
@@ -22,12 +22,18 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
     return ConnectionMultiplexer.Connect(cs);
 });
 
+// Services
 builder.Services.AddSingleton<ILocationRepository, RedisLocationRepository>();
-
-// ----- gRPC -----
 builder.Services.AddGrpc();
+builder.Services.AddGrpcReflection();
 
 var app = builder.Build();
 app.MapGrpcService<LocationGrpc>();
+
+if (app.Environment.IsDevelopment())
+{
+    app.MapGrpcReflectionService();
+}
+
 app.MapGet("/", () => "LocationService gRPC running");
 app.Run();
