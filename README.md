@@ -5,6 +5,13 @@ This project is built using **.NET 8** and follows a modern microservice archite
 - A **REST API Service**
 - A **gRPC Microservices**
 
+Run locally
+```bash
+docker-compose build
+docker-compose up
+```
+
+
 ## Functional
 
 ### Proximity Service
