@@ -13,4 +13,4 @@ grpcurl -plaintext \
 ## TODO
 
 - [x] Connect service to Redis Geospatial index
-- [] Add calls to interact with Redis (GEOADD, GEOSEARCH)
+- [ ] Add calls to interact with Redis (GEOADD, GEOSEARCH)
