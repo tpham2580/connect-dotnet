@@ -15,6 +15,7 @@ RUN dotnet publish -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
+ENV ASPNETCORE_ENVIRONMENT=Development
 
 RUN apt-get update && apt-get install -y \
 	# Edit/view files
