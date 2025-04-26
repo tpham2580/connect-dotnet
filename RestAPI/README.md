@@ -24,6 +24,10 @@ The REST API serves as an API Gateway for a .NET Microservice Architecture
 > | `400`         | `application/json`                | `{"code":"400","message":"Bad Request"}`                            |
 
 
+</details>
+
+---
+
 ## TODO
 
 - [ ] CRUD Functionality for Business Information
