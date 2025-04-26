@@ -31,5 +31,12 @@ The REST API serves as an API Gateway for a .NET Microservice Architecture
 ## TODO
 
 - [ ] CRUD Functionality for Business Information
+    - [ ] Read Business Info
+    - [ ] Create Business Info
+    - [ ] Update Business Info
+    - [ ] Delete Business info
 - [ ] API call search nearby businesses
+    - [x] Expose endpoint
+    - [ ] Remove dummy data and setup gRPC client
+    - [ ] Returns proper data from LocationService
 - [ ] Rate limiting
