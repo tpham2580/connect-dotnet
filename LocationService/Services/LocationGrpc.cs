@@ -1,12 +1,12 @@
 // Services/LocationGrpc.cs
 using Grpc.Core;
 using StackExchange.Redis;
-using LocationService;
+using Grpc.LocationService;
 using LocationService.Infrastructure;
 
 namespace LocationService.Services;
 
-public class LocationGrpc : LocationService.LocationServiceBase
+public class LocationGrpc : Grpc.LocationService.LocationService.LocationServiceBase
 {
     private readonly ILocationRepository _repo;
     private readonly ILogger<LocationGrpc> _log;
