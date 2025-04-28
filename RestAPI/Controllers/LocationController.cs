@@ -8,12 +8,15 @@ namespace RestAPI.Controllers;
 [Route("v1/search")]
 public class LocationController : ControllerBase
 {
-    private readonly ILocationService _locationService;
+    private const uint DEFAULT_RADIUS = 5000;
+    private const int DEFAULT_LIMIT = 100;
+
+    private readonly ILocationSearchService _locationSearchService;
     private readonly ILogger<LocationController> _logger;
 
-    public LocationController(ILocationService locationService, ILogger<LocationController> logger)
+    public LocationController(ILocationSearchService locationSearchService, ILogger<LocationController> logger)
     {
-        _locationService = locationService;
+        _locationSearchService = locationSearchService;
         _logger = logger;
 
     }
@@ -22,7 +25,8 @@ public class LocationController : ControllerBase
     public async Task<IActionResult> GetNearby(
             [FromQuery] double latitude,
             [FromQuery] double longitude,
-            [FromQuery] int radius = 5000)
+            [FromQuery] uint radius = DEFAULT_RADIUS,
+            [FromQuery] int limit = DEFAULT_LIMIT)
     {
         _logger.LogInformation("Received location: {Lat}, {Lng}", latitude, longitude);
 
@@ -30,10 +34,11 @@ public class LocationController : ControllerBase
         {
             Latitude = latitude,
             Longitude = longitude,
-            Radius = radius
+            Radius = radius,
+            Limit = limit
         };
 
-        var response = await _locationService.GetNearbyAsync(request);
+        var response = await _locationSearchService.GetNearbyAsync(request);
 
         _logger.LogInformation("Returning nearby results: {Response}", response);
 

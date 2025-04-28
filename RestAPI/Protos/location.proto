@@ -1,0 +1,24 @@
+syntax = "proto3";
+option csharp_namespace = "Grpc.LocationService";
+package location.v1;
+
+service LocationService {
+  rpc GetNearbyBusinesses (NearbyRequest) returns (NearbyResponse);
+}
+
+message NearbyRequest {
+  double latitude = 1;
+  double longitude = 2;
+  uint32 radius_m = 3;
+  int32 limit = 4;
+}
+
+message NearbyResponse {
+  int32 total = 1;
+  repeated NearbyBusiness businesses = 2;
+}
+
+message NearbyBusiness {
+  int64 business_id = 1;
+  double distance_meters = 2;
+}

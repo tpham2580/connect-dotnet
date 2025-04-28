@@ -14,10 +14,18 @@ Log.Logger = new LoggerConfiguration()
 
 builder.Host.UseSerilog();
 
+// gRPC Client
+builder.Services
+    .AddGrpcClient<Grpc.LocationService.LocationService.LocationServiceClient>(options =>
+    {
+        options.Address = new Uri(builder.Configuration["GrpcSettings:LocationServiceUrl"]
+                                ?? throw new Exception("Configuration Not Found"));
+    });
+
 // Services
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddControllers();
-builder.Services.AddScoped<ILocationService, LocationService>();
+builder.Services.AddScoped<ILocationSearchService, LocationSearchService>();
 builder.Services.AddSwaggerGen(o =>
 {
     o.SwaggerDoc("v1", new OpenApiInfo { Title = "Mobile BFF API", Version = "v1" });

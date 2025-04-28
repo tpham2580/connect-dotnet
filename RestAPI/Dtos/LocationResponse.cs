@@ -2,7 +2,7 @@ namespace RestAPI.Dtos;
 
 public class LocationResponse
 {
-    public int BusinessId { get; set; }
+    public long BusinessId { get; set; }
     public string Name { get; set; } = string.Empty;
     public double DistanceMeters { get; set; }
 
