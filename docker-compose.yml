@@ -54,6 +54,19 @@ services:
       - connectwork
     entrypoint: ["/bin/sh", "/seed-redis.sh"]
 
+  businessservice:
+    container_name: connect.businessservice
+    build:
+      context: .
+      dockerfile: BusinessService/Dockerfile
+    ports:
+      - "6001:6001"
+    environment:
+      - ASPNETCORE_URLS=http://+:6001
+    networks:
+      - connectwork
+    image: tpham2580/connect-dotnet-businessservice
+
 networks:
   connectwork:
     driver: bridge
