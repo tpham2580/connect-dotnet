@@ -1,8 +1,10 @@
+using LocationService.Dtos;
+
 namespace LocationService.Infrastructure;
 
 public interface ILocationRepository
 {
-    Task<IReadOnlyList<long>> SearchAsync(
-        double latitude, double longitude, int radiusM, int? limit, CancellationToken ct);
+    Task<IReadOnlyList<BusinessNearbyDto>> SearchAsync(
+        double latitude, double longitude, uint radiusM, int? limit, CancellationToken ct);
 }
 

@@ -10,10 +10,15 @@ message NearbyRequest {
   double latitude = 1;
   double longitude = 2;
   uint32 radius_m = 3;
-  uint32 limit = 4;
+  int32 limit = 4;
 }
 
 message NearbyResponse {
-  uint32 total = 1;
-  repeated int64 businessIds = 2;
+  int32 total = 1;
+  repeated NearbyBusiness businesses = 2;
+}
+
+message NearbyBusiness {
+  int64 business_id = 1;
+  double distance_meters = 2;
 }

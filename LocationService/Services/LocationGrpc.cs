@@ -17,16 +17,25 @@ public class LocationGrpc : Grpc.LocationService.LocationService.LocationService
     public override async Task<NearbyResponse> GetNearbyBusinesses(
         NearbyRequest request, ServerCallContext context)
     {
-        var ids = await _repo.SearchAsync(
+        var results = await _repo.SearchAsync(
                       request.Latitude, request.Longitude,
-                      (int)request.RadiusM,
-                      request.Limit == 0 ? null : (int?)request.Limit,
+                      request.RadiusM,
+                      request.Limit,
                       context.CancellationToken);
 
-        return new NearbyResponse
+        var response = new NearbyResponse
         {
-            Total = (uint)ids.Count,
-            BusinessIds = { ids }
+            Total = results.Count
         };
+
+        response.Businesses.AddRange(
+            results.Select(r => new NearbyBusiness
+            {
+                BusinessId = r.BusinessId,
+                DistanceMeters = r.DistanceMeters ?? 0
+            })
+        );
+
+        return response;
     }
 }
