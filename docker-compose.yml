@@ -1,6 +1,5 @@
 services:
   restapi:
-    container_name: connect.restapi
     build:
       context: .
       dockerfile: RestAPI/Dockerfile
@@ -10,13 +9,12 @@ services:
       - locationservice
     environment:
       - ASPNETCORE_URLS=http://+:5000
-      - GrpcSettings:LocationServiceUrl=http://connect.locationservice:6000
+      - GrpcSettings:LocationServiceUrl=http://locationservice:6000
     networks:
       - connectwork
     image: tpham2580/connect-dotnet-restapi
 
   locationservice:
-    container_name: connect.locationservice
     build:
       context: .
       dockerfile: LocationService/Dockerfile
@@ -33,7 +31,6 @@ services:
     image: tpham2580/connect-dotnet-locationservice
 
   redis:
-    container_name: connect.redis
     image: redis/redis-stack:latest
     ports:
       - "6379:6379"
@@ -55,7 +52,6 @@ services:
     entrypoint: ["/bin/sh", "/seed-redis.sh"]
 
   businessservice:
-    container_name: connect.businessservice
     build:
       context: .
       dockerfile: BusinessService/Dockerfile
