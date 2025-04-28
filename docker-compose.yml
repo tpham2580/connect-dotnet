@@ -1,5 +1,6 @@
 services:
   restapi:
+    container_name: connect.restapi
     build:
       context: .
       dockerfile: RestAPI/Dockerfile
@@ -9,9 +10,13 @@ services:
       - locationservice
     environment:
       - ASPNETCORE_URLS=http://+:5000
+      - GrpcSettings:LocationServiceUrl=http://connect.locationservice:6000
+    networks:
+      - connectwork
     image: tpham2580/connect-dotnet-restapi
 
   locationservice:
+    container_name: connect.locationservice
     build:
       context: .
       dockerfile: LocationService/Dockerfile
@@ -23,14 +28,19 @@ services:
       - ASPNETCORE_URLS=http://+:6000
       - ConnectionStrings__Redis=redis:6379
       - REDIS_PASSWORD=${REDIS_PASSWORD}
+    networks:
+      - connectwork
     image: tpham2580/connect-dotnet-locationservice
 
   redis:
+    container_name: connect.redis
     image: redis/redis-stack:latest
     ports:
       - "6379:6379"
     volumes:
       - redis-data:/data
+    networks:
+      - connectwork
     command: ["redis-server", "--save", "60", "1", "--dir", "/data", "--requirepass", "${REDIS_PASSWORD}"]  # Save every 60s or 1 key change
 
   redis-seeder:
@@ -40,7 +50,13 @@ services:
       - redis
     environment: 
       - REDIS_PASSWORD=${REDIS_PASSWORD}
+    networks:
+      - connectwork
     entrypoint: ["/bin/sh", "/seed-redis.sh"]
+
+networks:
+  connectwork:
+    driver: bridge
 
 volumes:
   redis-data: 
