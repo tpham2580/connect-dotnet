@@ -5,7 +5,7 @@ The Location Service uses the Redis Geospatial index to store business coordinat
 
 ```bash
 grpcurl -plaintext \
-  -d '{"latitude":47.61,"longitude":-122.33,"radiusM":5000,"limit":5}' \
+  -d '{"latitude":47.582400761924504,"longitude":-122.16794708655202,"radiusM":5000000,"limit":100}' \
   localhost:6000 \
   location.v1.LocationService/GetNearbyBusinesses
 ```
@@ -14,4 +14,4 @@ grpcurl -plaintext \
 
 - [x] Connect service to Redis Geospatial index
 - [ ] Add calls to interact with Redis (GEOADD, GEOSEARCH)
-- [ ] Add call to get business names by list of ids from redis ()
+- [x] Add call to get business names by list of ids from redis ()

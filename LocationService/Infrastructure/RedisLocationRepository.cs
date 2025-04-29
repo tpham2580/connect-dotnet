@@ -18,7 +18,7 @@ public sealed class RedisLocationRepository : ILocationRepository
         _log = log;
     }
 
-    public async Task<IReadOnlyList<BusinessNearbyDto>> SearchAsync(double latitude, double longitude, uint radiusM, int? limit, CancellationToken ct)
+    public async Task<IReadOnlyList<BusinessNearbyDto>> SearchAsync(double latitude, double longitude, uint radiusM, int limit, CancellationToken ct)
     {
         var shape = new GeoSearchCircle(radiusM);
         var results = await _db.GeoSearchAsync(
@@ -26,16 +26,30 @@ public sealed class RedisLocationRepository : ILocationRepository
                         longitude: longitude,
                         latitude: latitude,
                         shape: shape,
-                        count: limit ?? 0,
+                        count: limit,
                         order: Order.Ascending,
                         options: GeoRadiusOptions.WithDistance);
 
-        _log.LogInformation("Result has been received: \n{results}", results.ToString());
+        _log.LogInformation("Results have been received: \n{results}", results.ToString());
 
-        return results.Select(r => new BusinessNearbyDto
+        _log.LogInformation("Retrieving names from ids");
+        var redisKeys = results.Select(r => (RedisKey)r.Member.ToString()).ToArray();
+        var nameValues = await _db.StringGetAsync(redisKeys);
+
+        _log.LogInformation("Names have been retrieved: \n{nameValues}", nameValues.ToString());
+        var nearbyDtos = new List<BusinessNearbyDto>();
+        for (int i = 0; i < results.Length; i++)
         {
-            BusinessId = long.Parse(r.Member.ToString()),
-            DistanceMeters = r.Distance
-        }).ToList();
+            var name = nameValues[i].HasValue ? nameValues[i].ToString() : null;
+
+            nearbyDtos.Add(new BusinessNearbyDto
+            {
+                BusinessId = long.Parse(results[i].Member.ToString()),
+                Name = name,
+                DistanceMeters = results[i].Distance
+            });
+        }
+
+        return nearbyDtos;
     }
 }
