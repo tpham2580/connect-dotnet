@@ -9,8 +9,10 @@ done
 
 echo "Seeding Redis database with test businesses..."
 
-redis-cli -h redis -p 6379 -a "$REDIS_PASSWORD" GEOADD biz:geo -100.335167 40.608013 101
-redis-cli -h redis -p 6379 -a "$REDIS_PASSWORD" GEOADD biz:geo -50.330000 80.610000 202
-redis-cli -h redis -p 6379 -a "$REDIS_PASSWORD" GEOADD biz:geo -122.340000 47.612000 303
+redis-cli -h redis -p 6379 -a "$REDIS_PASSWORD" GEOADD biz:geo -122.31665938469888 47.59996796458999 1
+redis-cli -h redis -p 6379 -a "$REDIS_PASSWORD" GEOADD biz:geo -122.64987949582144 45.55924712430121 2
+
+redis-cli -h redis -p 6379 -a "$REDIS_PASSWORD" SET 1 "Saigon Vietnam Deli"
+redis-cli -h redis -p 6379 -a "$REDIS_PASSWORD" SET 2 "Mémoire Cà Phê"
 
 echo "Done seeding Redis!"
