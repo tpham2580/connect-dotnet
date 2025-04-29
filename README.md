@@ -15,7 +15,7 @@ docker-compose up --build
 
 ### Proximity Service
 
-- [ ] Return all businesses based on a user's location.
+- [x] Return all businesses based on a user's location.
 - [ ] Business owners can add, delete, or update a business, but info does not need to be reflected in real-time.
 - [ ] Customers can view detailed information about a business.
 
