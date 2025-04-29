@@ -14,3 +14,4 @@ grpcurl -plaintext \
 
 - [x] Connect service to Redis Geospatial index
 - [ ] Add calls to interact with Redis (GEOADD, GEOSEARCH)
+- [ ] Add call to get business names by list of ids from redis ()
