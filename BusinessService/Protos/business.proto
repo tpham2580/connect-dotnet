@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+import "google/protobuf/field_mask.proto";
+option csharp_namespace = "Grpc.BusinessService";
+package business.v1;
+
+service BusinessService {
+  rpc CreateBusiness(CreateBusinessRequest) returns (BusinessResponse);
+  rpc GetBusinessById(BusinessByIdRequest) returns (BusinessResponse);
+  rpc GetAllBusinessesByIds(BusinessesByIdsRequest) returns (GetAllBusinessesByIdsResponse);
+  rpc UpdateBusiness(UpdateBusinessRequest) returns (BusinessResponse);
+  rpc DeleteBusiness(BusinessByIdRequest) returns (DeleteItemByIdResponse);
+}
+
+message Business {
+  int64 id = 1;
+  string name = 2;
+  string address = 3;
+  string city = 4;
+  string state = 5;
+  string country = 6;
+  double latitude = 7;
+  double longitude = 8;
+}
+
+message BusinessResponse {
+  Business business = 1;
+}
+
+message CreateBusinessRequest {
+  Business business = 1;
+}
+
+message BusinessByIdRequest {
+  int64 id = 1;
+}
+
+message BusinessesByIdsRequest {
+  repeated int64 ids = 1;
+}
+
+message GetAllBusinessesByIdsResponse {
+  repeated Business businesses = 1;
+}
+
+message UpdateBusinessRequest {
+  Business business = 1;
+  google.protobuf.FieldMask update_mask = 2;
+}
+
+message DeleteItemByIdResponse {
+  bool success = 1;
+}
