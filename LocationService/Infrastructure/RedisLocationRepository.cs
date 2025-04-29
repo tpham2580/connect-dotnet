@@ -33,7 +33,9 @@ public sealed class RedisLocationRepository : ILocationRepository
         _log.LogInformation("Results have been received: \n{results}", results.ToString());
 
         _log.LogInformation("Retrieving names from ids");
-        var redisKeys = results.Select(r => (RedisKey)r.Member.ToString()).ToArray();
+        var redisKeys = results
+            .Select(r => (RedisKey)$"business:{r.Member.ToString()}")
+            .ToArray();
         var nameValues = await _db.StringGetAsync(redisKeys);
 
         _log.LogInformation("Names have been retrieved: \n{nameValues}", nameValues.ToString());
