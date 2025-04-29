@@ -20,5 +20,6 @@ message NearbyResponse {
 
 message NearbyBusiness {
   int64 business_id = 1;
-  double distance_meters = 2;
+  string name = 2;
+  double distance_meters = 3;
 }

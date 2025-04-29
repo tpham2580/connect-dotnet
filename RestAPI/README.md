@@ -38,5 +38,5 @@ The REST API serves as an API Gateway for a .NET Microservice Architecture
 - [ ] API call search nearby businesses
     - [x] Expose endpoint
     - [x] Remove dummy data and setup gRPC client
-    - [ ] Returns proper data from LocationService
+    - [x] Return restaurant names
 - [ ] Rate limiting

@@ -32,6 +32,7 @@ public class LocationGrpc : Grpc.LocationService.LocationService.LocationService
             results.Select(r => new NearbyBusiness
             {
                 BusinessId = r.BusinessId,
+                Name = r.Name,
                 DistanceMeters = r.DistanceMeters ?? 0
             })
         );
