@@ -36,6 +36,7 @@ public class LocationSearchService : ILocationSearchService
                 .Select(o => new LocationResponse
                 {
                     BusinessId = o.BusinessId,
+                    Name = o.Name,
                     DistanceMeters = o.DistanceMeters
                 })
                 .ToList()
