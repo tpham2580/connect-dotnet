@@ -26,6 +26,7 @@ builder.Host.UseSerilog();
 // Services
 builder.Services.AddSingleton<IDbConnectionFactory, NpgsqlConnectionFactory>();
 builder.Services.AddScoped<BusinessRepository>();
+builder.Services.AddScoped<BusinessService.Application.BusinessService>();
 builder.Services.AddGrpc();
 builder.Services.AddGrpcReflection();
 

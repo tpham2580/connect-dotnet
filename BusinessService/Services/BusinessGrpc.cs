@@ -1,24 +1,23 @@
 using Grpc.Core;
 using Grpc.BusinessService;
 using BusinessService.Application;
-using BusinessService.Infrastructure;
 
 namespace BusinessService.Services;
 
 public class BusinessGrpc : Grpc.BusinessService.BusinessService.BusinessServiceBase
 {
     private readonly ILogger<BusinessGrpc> _log;
-    private readonly BusinessRepository _repo;
+    private readonly BusinessService.Application.BusinessService _service;
 
-    public BusinessGrpc(ILogger<BusinessGrpc> log, BusinessRepository repo)
+    public BusinessGrpc(ILogger<BusinessGrpc> log, BusinessService.Application.BusinessService service)
     {
         _log = log;
-        _repo = repo;
+        _service = service;
     }
 
     public override async Task<BusinessResponse> GetBusinessById(BusinessByIdRequest request, ServerCallContext context)
     {
-        var response = await _repo.GetBusinessByIdAsync(request.Id);
+        var response = await _service.GetBusinessByIdAsync(request.Id);
 
         if (response == null)
         {
@@ -46,7 +45,7 @@ public class BusinessGrpc : Grpc.BusinessService.BusinessService.BusinessService
             throw new RpcException(new Status(StatusCode.InvalidArgument, message));
         }
 
-        var response = await _repo.CreateBusinessAsync(business);
+        var response = await _service.CreateBusinessAsync(business);
 
         if (response == null)
         {
@@ -74,7 +73,7 @@ public class BusinessGrpc : Grpc.BusinessService.BusinessService.BusinessService
             throw new RpcException(new Status(StatusCode.InvalidArgument, message));
         }
 
-        var response = await _repo.UpdateBusinessAsync(business);
+        var response = await _service.UpdateBusinessAsync(business);
 
         if (response == null)
         {
