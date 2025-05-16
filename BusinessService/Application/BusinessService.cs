@@ -34,4 +34,9 @@ public class BusinessService
         return response;
     }
 
+    public async Task<bool> DeleteBusinessByIdAsync(long id)
+    {
+        var response = await _repo.DeleteBusinessByIdAsync(id);
+        return response != false;
+    }
 }

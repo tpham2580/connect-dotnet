@@ -85,4 +85,20 @@ public class BusinessGrpc : Grpc.BusinessService.BusinessService.BusinessService
             Business = BusinessMapper.ToGrpc(response)
         };
     }
+
+    public override async Task<DeleteItemByIdResponse> DeleteBusiness(BusinessByIdRequest request, ServerCallContext context)
+    {
+        var response = await _service.DeleteBusinessByIdAsync(request.Id);
+
+        if (!response)
+        {
+            throw new RpcException(new Status(StatusCode.NotFound, $"Business with ID {request.Id} not found."));
+        }
+
+        return new DeleteItemByIdResponse
+        {
+            Success = true
+        };
+    }
+
 }

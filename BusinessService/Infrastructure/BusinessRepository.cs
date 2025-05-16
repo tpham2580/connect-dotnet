@@ -166,4 +166,22 @@ public class BusinessRepository
         };
     }
 
+    public async Task<bool> DeleteBusinessByIdAsync(long id)
+    {
+        await using var connection = _connectionFactory.CreateConnection();
+        await connection.OpenAsync();
+
+        const string query = @"
+            DELETE FROM business
+            WHERE business_id = @id;
+        ";
+
+        await using var cmd = new NpgsqlCommand(query, connection);
+        cmd.Parameters.AddWithValue("@id", id);
+
+        var affectedRows = await cmd.ExecuteNonQueryAsync();
+        _log.LogInformation("DB finished being called. Number of affected rows: {@affectedRows}", affectedRows);
+        return affectedRows > 0;
+    }
+
 }

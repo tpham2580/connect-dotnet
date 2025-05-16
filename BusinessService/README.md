@@ -61,6 +61,16 @@ grpcurl -plaintext \
   business.v1.BusinessService/UpdateBusiness
 ```
 
+### Delete an existing business
+
+```bash
+grpcurl -plaintext \
+  -d '{"id": 123}' \
+  localhost:6001 \
+  business.v1.BusinessService/DeleteBusiness
+```
+
+
 ## TODO
 
 - [x] Connect to PostgreSQL server  
@@ -68,4 +78,4 @@ grpcurl -plaintext \
 - [ ] Get Businesses from list of Ids  
 - [x] Create Business  
 - [x] Update Business Info  
-- [ ] Delete Business  
+- [x] Delete Business  
