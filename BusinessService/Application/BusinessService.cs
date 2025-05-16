@@ -26,4 +26,12 @@ public class BusinessService
         var response = await _repo.CreateBusinessAsync(business);
         return response;
     }
+
+    public async Task<BusinessModel?> UpdateBusinessAsync(BusinessModel business)
+    {
+        _log.LogInformation("Received Business Model: \n{@business}", business);
+        var response = await _repo.UpdateBusinessAsync(business);
+        return response;
+    }
+
 }

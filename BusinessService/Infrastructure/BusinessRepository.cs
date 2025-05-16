@@ -103,4 +103,67 @@ public class BusinessRepository
             Longitude = reader.GetDouble(7),
         };
     }
+
+    public async Task<BusinessModel?> UpdateBusinessAsync(BusinessModel business)
+    {
+        _log.LogInformation("Received Business Model: \n{@business}", business);
+
+        await using var connection = _connectionFactory.CreateConnection();
+        await connection.OpenAsync();
+
+        const string query = @"
+            UPDATE business
+            SET
+                name = @name,
+                address = @address,
+                city = @city,
+                state = @state,
+                country = @country,
+                latitude = @latitude,
+                longitude = @longitude
+            WHERE business_id = @id
+            RETURNING business_id, name, address, city, state, country, latitude, longitude;
+        ";
+
+        await using var cmd = new NpgsqlCommand(query, connection);
+        cmd.Parameters.AddWithValue("@id", business.Id);
+        cmd.Parameters.AddWithValue("@name", business.Name);
+        cmd.Parameters.AddWithValue("@address", business.Address);
+        cmd.Parameters.AddWithValue("@city", business.City);
+        cmd.Parameters.AddWithValue("@state", business.State);
+        cmd.Parameters.AddWithValue("@country", business.Country);
+        cmd.Parameters.AddWithValue("@latitude", business.Latitude);
+        cmd.Parameters.AddWithValue("@longitude", business.Longitude);
+
+        await using var reader = await cmd.ExecuteReaderAsync();
+
+        if (!await reader.ReadAsync())
+        {
+            return null;
+        }
+
+        _log.LogInformation("DB call finished. Inserted row: " +
+            "{Id}, {Name}, {Address}, {City}, {State}, {Country}, {Latitude}, {Longitude}",
+            reader.GetInt64(0),
+            reader.GetString(1),
+            reader.GetString(2),
+            reader.GetString(3),
+            reader.GetString(4),
+            reader.GetString(5),
+            reader.GetDouble(6),
+            reader.GetDouble(7));
+
+        return new BusinessModel
+        {
+            Id = reader.GetInt64(0),
+            Name = reader.GetString(1),
+            Address = reader.GetString(2),
+            City = reader.GetString(3),
+            State = reader.GetString(4),
+            Country = reader.GetString(5),
+            Latitude = reader.GetDouble(6),
+            Longitude = reader.GetDouble(7),
+        };
+    }
+
 }

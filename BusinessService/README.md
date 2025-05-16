@@ -30,11 +30,42 @@ grpcurl -plaintext \
   business.v1.BusinessService/CreateBusiness
 ```
 
+### Update an existing business
+
+```bash
+grpcurl -plaintext \
+  -d '{
+        "business": {
+          "id": 3,
+          "name":      "Updated Coffee",
+          "address":   "456 Market St",
+          "city":      "Seattle",
+          "state":     "WA",
+          "country":   "USA",
+          "latitude":  47.6100,
+          "longitude": -122.3340
+        },
+        "update_mask": {
+          "paths": [
+            "name",
+            "address",
+            "city",
+            "state",
+            "country",
+            "latitude",
+            "longitude"
+          ]
+        }
+      }' \
+  localhost:6001 \
+  business.v1.BusinessService/UpdateBusiness
+```
+
 ## TODO
 
 - [x] Connect to PostgreSQL server  
 - [x] Get Business Info by Id  
 - [ ] Get Businesses from list of Ids  
 - [x] Create Business  
-- [ ] Update Business Info  
+- [x] Update Business Info  
 - [ ] Delete Business  

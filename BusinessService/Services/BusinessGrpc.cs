@@ -58,4 +58,32 @@ public class BusinessGrpc : Grpc.BusinessService.BusinessService.BusinessService
             Business = BusinessMapper.ToGrpc(response)
         };
     }
+
+    public override async Task<BusinessResponse> UpdateBusiness(UpdateBusinessRequest request, ServerCallContext context)
+    {
+        _log.LogInformation("Request received: \n{@request}", request);
+
+        var business = BusinessMapper.ToBusinessModel(request);
+
+        _log.LogInformation("Request converted to Business Model: \n{@business}", business);
+
+        var errors = Utils.Utils.IsValidBusinessInfo(business, requireId: true);
+        if (errors.Any())
+        {
+            var message = string.Join("; ", errors);
+            throw new RpcException(new Status(StatusCode.InvalidArgument, message));
+        }
+
+        var response = await _repo.UpdateBusinessAsync(business);
+
+        if (response == null)
+        {
+            throw new RpcException(new Status(StatusCode.InvalidArgument, $"Unable to update Business. Id not found."));
+        }
+
+        return new BusinessResponse
+        {
+            Business = BusinessMapper.ToGrpc(response)
+        };
+    }
 }
