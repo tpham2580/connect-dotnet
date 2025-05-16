@@ -5,9 +5,12 @@ namespace BusinessService.Utils;
 public static class Utils
 {
     /// Check to see if all Business Info is valid
-    public static List<string> IsValidBusinessInfo(BusinessModel business)
+    public static List<string> IsValidBusinessInfo(BusinessModel business, bool requireId = false)
     {
         var errors = new List<string>();
+
+        if (requireId && (!business.Id.HasValue || business.Id.Value <= 0))
+            errors.Add("Business ID is required for update.");
 
         if (string.IsNullOrWhiteSpace(business.Name))
             errors.Add("Name is required.");

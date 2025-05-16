@@ -80,7 +80,6 @@ public class UtilsTests
         };
 
         var errors = Utils.Utils.IsValidBusinessInfo(business);
-
         Assert.Contains("Name is required.", errors);
         Assert.Contains("Address is required.", errors);
         Assert.Contains("City is required.", errors);
@@ -88,5 +87,24 @@ public class UtilsTests
         Assert.Contains("Latitude must be between -90 and 90.", errors);
         Assert.Contains("Longitude must be between -180 and 180.", errors);
         Assert.Equal(6, errors.Count);
+    }
+
+    [Fact]
+    public void ReturnsError_WhenIdIsMissingForUpdate()
+    {
+        var business = new BusinessModel
+        {
+            Id = null, // Simulate missing ID
+            Name = "Test Biz",
+            Address = "123 Street",
+            City = "City",
+            State = "State",
+            Country = "USA",
+            Latitude = 47.0,
+            Longitude = -122.0
+        };
+
+        var errors = Utils.Utils.IsValidBusinessInfo(business, requireId: true);
+        Assert.Contains("Business ID is required for update.", errors);
     }
 }
