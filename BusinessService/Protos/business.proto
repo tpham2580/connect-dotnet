@@ -23,12 +23,22 @@ message Business {
   double longitude = 8;
 }
 
+message newBusiness {
+  string name = 1;
+  string address = 2;
+  string city = 3;
+  string state = 4;
+  string country = 5;
+  double latitude = 6;
+  double longitude = 7;
+}
+
 message BusinessResponse {
   Business business = 1;
 }
 
 message CreateBusinessRequest {
-  Business business = 1;
+  newBusiness business = 1;
 }
 
 message BusinessByIdRequest {
