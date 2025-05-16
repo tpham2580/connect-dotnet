@@ -1,6 +1,5 @@
 #!/bin/sh
 set -e
-
 echo "Waiting for Redis to be available..."
 
 until redis-cli -h redis -p 6379 -a "$REDIS_PASSWORD" ping | grep PONG; do
