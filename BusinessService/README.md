@@ -1,11 +1,19 @@
 # .NET 8 gRPC Business Service
 
-This project is built using **.NET 8** and follows a modern microservice architecture pattern. It includes:
+This project is built using **.NET 8** and follows a modern microservice architecture pattern.  
 The Business Service uses PostgreSQL to manage business information.
+
+## Example gRPC Calls
+
+### Get a business by ID
 
 ```bash
 grpcurl -plaintext -d '{"id": 1}' localhost:6001 business.v1.BusinessService/GetBusinessById
+```
 
+### Create a new business
+
+```bash
 grpcurl -plaintext \
   -d '{
         "business": {
@@ -24,9 +32,9 @@ grpcurl -plaintext \
 
 ## TODO
 
-- [x] Connect to PostgreSQL server
-- [x] Get Business Info by Id
-- [ ] Get Businesses from list of Ids
-- [ ] Create Business
-- [ ] Update Business Info
-- [ ] Delete Business
+- [x] Connect to PostgreSQL server  
+- [x] Get Business Info by Id  
+- [ ] Get Businesses from list of Ids  
+- [x] Create Business  
+- [ ] Update Business Info  
+- [ ] Delete Business  
