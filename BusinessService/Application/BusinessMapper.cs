@@ -1,4 +1,4 @@
-using BusinessService.Dtos;
+using BusinessService.Models;
 using BusinessService.Infrastructure;
 using Grpc.BusinessService;
 
@@ -6,27 +6,39 @@ namespace BusinessService.Application;
 
 public static class BusinessMapper
 {
-    public static BusinessDto ToDto(BusinessEntity entity) => new BusinessDto
+    public static BusinessModel ToBusinessModel(Business business) => new BusinessModel
     {
-        Id = entity.BusinessId,
-        Name = entity.Name,
-        Address = entity.Address,
-        City = entity.City,
-        State = entity.State,
-        Country = entity.Country,
-        Latitude = entity.Latitude,
-        Longitude = entity.Longitude
+        Id = business.Id,
+        Name = business.Name,
+        Address = business.Address,
+        City = business.City,
+        State = business.State,
+        Country = business.Country,
+        Latitude = business.Latitude,
+        Longitude = business.Longitude
     };
 
-    public static Business ToGrpc(BusinessDto dto) => new Business
+    public static BusinessModel ToBusinessModel(CreateBusinessRequest request) => new BusinessModel
     {
-        Id = dto.Id,
-        Name = dto.Name,
-        Address = dto.Address,
-        City = dto.City,
-        State = dto.State,
-        Country = dto.Country,
-        Latitude = dto.Latitude,
-        Longitude = dto.Longitude
+        Name = request.Business.Name,
+        Address = request.Business.Address,
+        City = request.Business.City,
+        State = request.Business.State,
+        Country = request.Business.Country,
+        Latitude = request.Business.Latitude,
+        Longitude = request.Business.Longitude
+
+    };
+
+    public static Business ToGrpc(BusinessModel business) => new Business
+    {
+        Id = business.Id.HasValue ? business.Id.Value : 0,
+        Name = business.Name,
+        Address = business.Address,
+        City = business.City,
+        State = business.State,
+        Country = business.Country,
+        Latitude = business.Latitude,
+        Longitude = business.Longitude
     };
 }
