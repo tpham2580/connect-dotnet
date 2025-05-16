@@ -11,6 +11,16 @@ The Business Service uses PostgreSQL to manage business information.
 grpcurl -plaintext -d '{"id": 1}' localhost:6001 business.v1.BusinessService/GetBusinessById
 ```
 
+### Get all businesses by ID
+
+```bash
+grpcurl -plaintext \
+  -d '{"ids": [1, 2, 3]}' \
+  localhost:6001 \
+  business.v1.BusinessService/GetAllBusinessesByIds
+```
+
+
 ### Create a new business
 
 ```bash
@@ -75,7 +85,7 @@ grpcurl -plaintext \
 
 - [x] Connect to PostgreSQL server  
 - [x] Get Business Info by Id  
-- [ ] Get Businesses from list of Ids  
+- [x] Get Businesses from list of Ids  
 - [x] Create Business  
 - [x] Update Business Info  
 - [x] Delete Business  

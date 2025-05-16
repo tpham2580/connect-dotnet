@@ -20,6 +20,11 @@ public class BusinessService
         return response;
     }
 
+    public async Task<List<BusinessModel>> GetAllBusinessesByIdsAsync(List<long> ids)
+    {
+        return await _repo.GetAllBusinessesByIdsAsync(ids);
+    }
+
     public async Task<BusinessModel?> CreateBusinessAsync(BusinessModel business)
     {
         _log.LogInformation("Received Business Model: \n{@business}", business);

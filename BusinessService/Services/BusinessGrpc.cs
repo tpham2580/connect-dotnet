@@ -30,6 +30,21 @@ public class BusinessGrpc : Grpc.BusinessService.BusinessService.BusinessService
         };
     }
 
+    public override async Task<GetAllBusinessesByIdsResponse> GetAllBusinessesByIds(BusinessesByIdsRequest request, ServerCallContext context)
+    {
+        if (request.Ids == null || request.Ids.Count == 0)
+        {
+            throw new RpcException(new Status(StatusCode.InvalidArgument, "List of business IDs must not be empty."));
+        }
+
+        var response = await _service.GetAllBusinessesByIdsAsync(request.Ids.ToList());
+
+        return new GetAllBusinessesByIdsResponse
+        {
+            Businesses = { response.Select(BusinessMapper.ToGrpc) }
+        };
+    }
+
     public override async Task<BusinessResponse> CreateBusiness(CreateBusinessRequest request, ServerCallContext context)
     {
         _log.LogInformation("Request received: \n{@request}", request);
