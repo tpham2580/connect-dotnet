@@ -1,4 +1,4 @@
-using BusinessService.Dtos;
+using BusinessService.Models;
 using BusinessService.Infrastructure;
 
 namespace BusinessService.Application;
@@ -6,15 +6,24 @@ namespace BusinessService.Application;
 public class BusinessService
 {
     private readonly BusinessRepository _repo;
+    private readonly ILogger<BusinessService> _log;
 
-    public BusinessService(BusinessRepository repo)
+    public BusinessService(BusinessRepository repo, ILogger<BusinessService> log)
     {
         _repo = repo;
+        _log = log;
     }
 
-    public async Task<BusinessDto?> GetBusinessByIdAsync(long id)
+    public async Task<BusinessModel?> GetBusinessByIdAsync(long id)
     {
-        var entity = await _repo.GetBusinessByIdAsync(id);
-        return entity == null ? null : BusinessMapper.ToDto(entity);
+        var response = await _repo.GetBusinessByIdAsync(id);
+        return response;
+    }
+
+    public async Task<BusinessModel?> CreateBusinessAsync(BusinessModel business)
+    {
+        _log.LogInformation("Received Business Model: \n{@business}", business);
+        var response = await _repo.CreateBusinessAsync(business);
+        return response;
     }
 }

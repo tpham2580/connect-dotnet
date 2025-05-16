@@ -18,18 +18,44 @@ public class BusinessGrpc : Grpc.BusinessService.BusinessService.BusinessService
 
     public override async Task<BusinessResponse> GetBusinessById(BusinessByIdRequest request, ServerCallContext context)
     {
-        var entity = await _repo.GetBusinessByIdAsync(request.Id);
+        var response = await _repo.GetBusinessByIdAsync(request.Id);
 
-        if (entity == null)
+        if (response == null)
         {
             throw new RpcException(new Status(StatusCode.NotFound, $"Business with ID {request.Id} not found."));
         }
 
-        var dto = BusinessMapper.ToDto(entity);
+        return new BusinessResponse
+        {
+            Business = BusinessMapper.ToGrpc(response)
+        };
+    }
+
+    public override async Task<BusinessResponse> CreateBusiness(CreateBusinessRequest request, ServerCallContext context)
+    {
+        _log.LogInformation("Request received: \n{@request}", request);
+
+        var business = BusinessMapper.ToBusinessModel(request);
+
+        _log.LogInformation("Request converted to Business Model: \n{@business}", business);
+
+        var errors = Utils.Utils.IsValidBusinessInfo(business);
+        if (errors.Any())
+        {
+            var message = string.Join("; ", errors);
+            throw new RpcException(new Status(StatusCode.InvalidArgument, message));
+        }
+
+        var response = await _repo.CreateBusinessAsync(business);
+
+        if (response == null)
+        {
+            throw new RpcException(new Status(StatusCode.InvalidArgument, $"Unable to create new Business."));
+        }
 
         return new BusinessResponse
         {
-            Business = BusinessMapper.ToGrpc(dto)
+            Business = BusinessMapper.ToGrpc(response)
         };
     }
 }
