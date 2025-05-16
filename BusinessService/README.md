@@ -65,7 +65,7 @@ grpcurl -plaintext \
 
 ```bash
 grpcurl -plaintext \
-  -d '{"id": 123}' \
+  -d '{"id": 3}' \
   localhost:6001 \
   business.v1.BusinessService/DeleteBusiness
 ```
