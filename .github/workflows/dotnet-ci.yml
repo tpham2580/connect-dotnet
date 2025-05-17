@@ -26,7 +26,14 @@ jobs:
         run: dotnet build MySolution.sln --no-restore --configuration Release
 
       - name: Run tests
-        run: dotnet test MySolution.sln --no-build --verbosity normal
+        run: |
+          for proj in $(find . -name '*Tests.csproj'); do
+            echo "Running tests for $proj"
+            dotnet test "$proj" \
+              --no-build \
+              --configuration Release \
+              --verbosity normal
+          done
 
   # OPTIONAL: Uncomment if you want to build and push Docker images
   # docker-build-and-push:
