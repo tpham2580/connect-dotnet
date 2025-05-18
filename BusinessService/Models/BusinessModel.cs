@@ -1,13 +1,13 @@
 namespace BusinessService.Models;
 
-public class BusinessModel
+public class BusinessModel : IBusinessModel
 {
     public Int64? Id { get; set; }
-    public string Name { get; set; }
-    public string Address { get; set; }
-    public string City { get; set; }
-    public string State { get; set; }
-    public string Country { get; set; }
-    public double Latitude { get; set; }
-    public double Longitude { get; set; }
+    public required string Name { get; set; }
+    public required string Address { get; set; }
+    public required string City { get; set; }
+    public required string State { get; set; }
+    public required string Country { get; set; }
+    public required double Latitude { get; set; }
+    public required double Longitude { get; set; }
 }
