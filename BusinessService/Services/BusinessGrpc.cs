@@ -6,6 +6,9 @@ namespace BusinessService.Services;
 
 public class BusinessGrpc : Grpc.BusinessService.BusinessService.BusinessServiceBase
 {
+    private const int DefaultPageSize = 100;
+    private const int MaxPageSize = 100;
+
     private readonly ILogger<BusinessGrpc> _log;
     private readonly BusinessService.Application.BusinessService _service;
 
@@ -43,6 +46,18 @@ public class BusinessGrpc : Grpc.BusinessService.BusinessService.BusinessService
         {
             Businesses = { response.Select(BusinessMapper.ToGrpc) }
         };
+    }
+
+    public override async Task<ListBusinessesResponse> ListBusinesses(ListBusinessesRequest request, ServerCallContext context)
+    {
+        var limit = request.Limit <= 0 ? DefaultPageSize : Math.Min(request.Limit, MaxPageSize);
+        var offset = request.Offset < 0 ? 0 : request.Offset;
+
+        var (businesses, total) = await _service.GetBusinessesAsync(limit, offset);
+
+        var response = new ListBusinessesResponse { Total = total };
+        response.Businesses.AddRange(businesses.Select(BusinessMapper.ToGrpc));
+        return response;
     }
 
     public override async Task<BusinessResponse> CreateBusiness(CreateBusinessRequest request, ServerCallContext context)

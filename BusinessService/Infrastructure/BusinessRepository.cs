@@ -83,6 +83,50 @@ public class BusinessRepository
         return results;
     }
 
+    public async Task<(List<BusinessModel> Businesses, long Total)> GetBusinessesAsync(int limit, int offset)
+    {
+        await using var connection = _connectionFactory.CreateConnection();
+        await connection.OpenAsync();
+
+        const string pageQuery = @"
+            SELECT business_id, name, address, city, state, country, latitude, longitude
+            FROM business
+            ORDER BY business_id
+            LIMIT @limit OFFSET @offset;
+        ";
+
+        var results = new List<BusinessModel>();
+
+        await using (var cmd = new NpgsqlCommand(pageQuery, connection))
+        {
+            cmd.Parameters.AddWithValue("@limit", limit);
+            cmd.Parameters.AddWithValue("@offset", offset);
+
+            await using var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                results.Add(new BusinessModel
+                {
+                    Id = reader.GetInt64(0),
+                    Name = reader.GetString(1),
+                    Address = reader.GetString(2),
+                    City = reader.GetString(3),
+                    State = reader.GetString(4),
+                    Country = reader.GetString(5),
+                    Latitude = reader.GetDouble(6),
+                    Longitude = reader.GetDouble(7)
+                });
+            }
+        }
+
+        const string countQuery = "SELECT COUNT(*) FROM business;";
+
+        await using var countCmd = new NpgsqlCommand(countQuery, connection);
+        var total = (long)(await countCmd.ExecuteScalarAsync() ?? 0L);
+
+        return (results, total);
+    }
+
     public async Task<BusinessModel?> CreateBusinessAsync(BusinessModel business)
     {
         _log.LogInformation("Received Business Model: \n{@business}", business);

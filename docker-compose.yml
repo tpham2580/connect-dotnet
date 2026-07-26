@@ -7,9 +7,11 @@ services:
       - "5000:5000"
     depends_on:
       - locationservice
+      - businessservice
     environment:
       - ASPNETCORE_URLS=http://+:5000
       - GrpcSettings:LocationServiceUrl=http://locationservice:6000
+      - GrpcSettings:BusinessServiceUrl=http://businessservice:6001
     networks:
       - connectwork
     image: tpham2580/connect-dotnet-restapi

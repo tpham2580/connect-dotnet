@@ -25,6 +25,11 @@ public class BusinessService
         return await _repo.GetAllBusinessesByIdsAsync(ids);
     }
 
+    public async Task<(List<BusinessModel> Businesses, long Total)> GetBusinessesAsync(int limit, int offset)
+    {
+        return await _repo.GetBusinessesAsync(limit, offset);
+    }
+
     public async Task<BusinessModel?> CreateBusinessAsync(BusinessModel business)
     {
         _log.LogInformation("Received Business Model: \n{@business}", business);

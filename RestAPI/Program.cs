@@ -22,10 +22,18 @@ builder.Services
                                 ?? throw new Exception("Configuration Not Found"));
     });
 
+builder.Services
+    .AddGrpcClient<Grpc.BusinessService.BusinessService.BusinessServiceClient>(options =>
+    {
+        options.Address = new Uri(builder.Configuration["GrpcSettings:BusinessServiceUrl"]
+                                ?? throw new Exception("Configuration Not Found"));
+    });
+
 // Services
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddControllers();
 builder.Services.AddScoped<ILocationSearchService, LocationSearchService>();
+builder.Services.AddScoped<IBusinessService, BusinessService>();
 builder.Services.AddSwaggerGen(o =>
 {
     o.SwaggerDoc("v1", new OpenApiInfo { Title = "Mobile BFF API", Version = "v1" });
@@ -57,3 +65,5 @@ app.Map("/error", (HttpContext context) =>
 });
 
 app.Run();
+
+public partial class Program { }
