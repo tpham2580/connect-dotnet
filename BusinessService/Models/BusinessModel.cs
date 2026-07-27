@@ -1,6 +1,6 @@
 namespace BusinessService.Models;
 
-public class BusinessModel : IBusinessModel
+public class BusinessModel
 {
     public Int64? Id { get; set; }
     public required string Name { get; set; }

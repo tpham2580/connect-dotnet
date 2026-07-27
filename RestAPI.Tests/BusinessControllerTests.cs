@@ -40,7 +40,7 @@ public class BusinessControllerTests
         });
         var client = factory.CreateClient();
 
-        var response = await client.GetAsync("/businesses?page=1&pageSize=10");
+        var response = await client.GetAsync("/v1/businesses?page=1&pageSize=10");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
@@ -63,7 +63,7 @@ public class BusinessControllerTests
         });
         var client = factory.CreateClient();
 
-        var response = await client.GetAsync("/businesses?page=2&pageSize=2");
+        var response = await client.GetAsync("/v1/businesses?page=2&pageSize=2");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
@@ -80,7 +80,7 @@ public class BusinessControllerTests
         await using var factory = new BusinessApiFactory();
         var client = factory.CreateClient();
 
-        var createResponse = await client.PostAsJsonAsync("/businesses", ValidRequest());
+        var createResponse = await client.PostAsJsonAsync("/v1/businesses", ValidRequest());
 
         Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
         Assert.NotNull(createResponse.Headers.Location);
@@ -90,7 +90,7 @@ public class BusinessControllerTests
         Assert.True(created!.Id > 0);
         Assert.Equal("New Business", created.Name);
 
-        var getResponse = await client.GetAsync($"/businesses/{created.Id}");
+        var getResponse = await client.GetAsync($"/v1/businesses/{created.Id}");
         Assert.Equal(HttpStatusCode.OK, getResponse.StatusCode);
 
         var fetched = await getResponse.Content.ReadFromJsonAsync<BusinessResponse>();
@@ -109,7 +109,7 @@ public class BusinessControllerTests
         invalid.Name = string.Empty;   // violates [Required]
         invalid.Latitude = 999;        // violates [Range(-90, 90)]
 
-        var response = await client.PostAsJsonAsync("/businesses", invalid);
+        var response = await client.PostAsJsonAsync("/v1/businesses", invalid);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -120,7 +120,7 @@ public class BusinessControllerTests
         await using var factory = new BusinessApiFactory();
         var client = factory.CreateClient();
 
-        var response = await client.GetAsync("/businesses/99999");
+        var response = await client.GetAsync("/v1/businesses/99999");
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
@@ -134,7 +134,7 @@ public class BusinessControllerTests
         var update = ValidRequest();
         update.Name = "Updated Business";
 
-        var putResponse = await client.PutAsJsonAsync("/businesses/1", update);
+        var putResponse = await client.PutAsJsonAsync("/v1/businesses/1", update);
 
         Assert.Equal(HttpStatusCode.OK, putResponse.StatusCode);
 
@@ -143,7 +143,7 @@ public class BusinessControllerTests
         Assert.Equal(1, updated!.Id);
         Assert.Equal("Updated Business", updated.Name);
 
-        var getResponse = await client.GetAsync("/businesses/1");
+        var getResponse = await client.GetAsync("/v1/businesses/1");
         var fetched = await getResponse.Content.ReadFromJsonAsync<BusinessResponse>();
         Assert.Equal("Updated Business", fetched!.Name);
     }
@@ -154,7 +154,7 @@ public class BusinessControllerTests
         await using var factory = new BusinessApiFactory();
         var client = factory.CreateClient();
 
-        var response = await client.PutAsJsonAsync("/businesses/99999", ValidRequest());
+        var response = await client.PutAsJsonAsync("/v1/businesses/99999", ValidRequest());
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
@@ -169,7 +169,7 @@ public class BusinessControllerTests
         invalid.Name = string.Empty;   // violates [Required]
         invalid.Latitude = 999;        // violates [Range(-90, 90)]
 
-        var response = await client.PutAsJsonAsync("/businesses/1", invalid);
+        var response = await client.PutAsJsonAsync("/v1/businesses/1", invalid);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -180,10 +180,10 @@ public class BusinessControllerTests
         await using var factory = new BusinessApiFactory(new[] { SeedBusiness(1, "Alpha") });
         var client = factory.CreateClient();
 
-        var deleteResponse = await client.DeleteAsync("/businesses/1");
+        var deleteResponse = await client.DeleteAsync("/v1/businesses/1");
         Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);
 
-        var getResponse = await client.GetAsync("/businesses/1");
+        var getResponse = await client.GetAsync("/v1/businesses/1");
         Assert.Equal(HttpStatusCode.NotFound, getResponse.StatusCode);
     }
 
@@ -193,7 +193,7 @@ public class BusinessControllerTests
         await using var factory = new BusinessApiFactory();
         var client = factory.CreateClient();
 
-        var response = await client.DeleteAsync("/businesses/99999");
+        var response = await client.DeleteAsync("/v1/businesses/99999");
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }

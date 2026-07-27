@@ -5,7 +5,7 @@ using RestAPI.Services;
 namespace RestAPI.Controllers;
 
 [ApiController]
-[Route("businesses")]
+[Route("v1/businesses")]
 public class BusinessController : ControllerBase
 {
     private const int DefaultPage = 1;

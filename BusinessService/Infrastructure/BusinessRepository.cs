@@ -113,8 +113,10 @@ public class BusinessRepository
                     City = reader.GetString(3),
                     State = reader.GetString(4),
                     Country = reader.GetString(5),
-                    Latitude = reader.GetDouble(6),
-                    Longitude = reader.GetDouble(7)
+                    // latitude/longitude are nullable in the DB; coalesce NULL to 0 so a single
+                    // row with missing coordinates cannot fail the whole page read (see TASK-8).
+                    Latitude = reader.IsDBNull(6) ? 0d : reader.GetDouble(6),
+                    Longitude = reader.IsDBNull(7) ? 0d : reader.GetDouble(7)
                 });
             }
         }
