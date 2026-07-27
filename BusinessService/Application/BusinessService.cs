@@ -3,7 +3,7 @@ using BusinessService.Infrastructure;
 
 namespace BusinessService.Application;
 
-public class BusinessService
+public class BusinessService : IBusinessService
 {
     private readonly BusinessRepository _repo;
     private readonly ILogger<BusinessService> _log;

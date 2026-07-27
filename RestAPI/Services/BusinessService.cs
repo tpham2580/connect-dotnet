@@ -79,6 +79,56 @@ public class BusinessService : IBusinessService
         return ToResponse(grpcResponse.Business);
     }
 
+    public async Task<BusinessResponse?> UpdateAsync(long id, BusinessRequest request)
+    {
+        _logger.LogInformation("Updating business. Id: {Id}", id);
+
+        try
+        {
+            var grpcResponse = await _client.UpdateBusinessAsync(new GrpcBusiness.UpdateBusinessRequest
+            {
+                Business = new GrpcBusiness.Business
+                {
+                    Id = id,
+                    Name = request.Name,
+                    Address = request.Address,
+                    City = request.City,
+                    State = request.State,
+                    Country = request.Country,
+                    Latitude = request.Latitude,
+                    Longitude = request.Longitude
+                }
+            });
+
+            return ToResponse(grpcResponse.Business);
+        }
+        catch (RpcException ex) when (ex.StatusCode == StatusCode.NotFound)
+        {
+            _logger.LogInformation("Business not found for update. Id: {Id}", id);
+            return null;
+        }
+    }
+
+    public async Task<bool> DeleteAsync(long id)
+    {
+        _logger.LogInformation("Deleting business. Id: {Id}", id);
+
+        try
+        {
+            var grpcResponse = await _client.DeleteBusinessAsync(new GrpcBusiness.BusinessByIdRequest
+            {
+                Id = id
+            });
+
+            return grpcResponse.Success;
+        }
+        catch (RpcException ex) when (ex.StatusCode == StatusCode.NotFound)
+        {
+            _logger.LogInformation("Business not found for delete. Id: {Id}", id);
+            return false;
+        }
+    }
+
     private static BusinessResponse ToResponse(GrpcBusiness.Business business) => new BusinessResponse
     {
         Id = business.Id,

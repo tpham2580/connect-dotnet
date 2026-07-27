@@ -4,7 +4,7 @@ title: Expose BusinessService via REST API
 status: In Progress
 assignee: []
 created_date: '2026-07-23 01:58'
-updated_date: '2026-07-26 03:40'
+updated_date: '2026-07-27 02:28'
 labels:
   - backend
   - api
@@ -27,12 +27,16 @@ Add REST endpoints (CRUD) for BusinessService so external clients can manage bus
 - [ ] #1 GET /businesses returns paged results
 - [ ] #2 POST /businesses validates payload and returns 201
 - [ ] #3 Integration tests cover happy path and 400/404
+- [ ] #4 GET /businesses/{id} returns 200 with the business or 404 when unknown
+- [ ] #5 PUT /businesses/{id} updates a business (200) and returns 404 for an unknown id
+- [ ] #6 DELETE /businesses/{id} removes a business (204) and returns 404 for an unknown id
+- [ ] #7 Unit tests cover ListBusinesses paging guards and the RestAPI BusinessService gRPC mapping
 <!-- AC:END -->
 
 ## Implementation Plan
 
 <!-- SECTION:PLAN:BEGIN -->
-1. BusinessService: add ListBusinesses(ListBusinessesRequest{int32 limit,int32 offset}) returns ListBusinessesResponse{repeated Business businesses,int64 total} to business.proto; implement end-to-end: BusinessRepository.GetBusinessesAsync (SELECT ... ORDER BY business_id LIMIT/OFFSET + COUNT(*) total), Application/BusinessService.cs, Services/BusinessGrpc.cs handler (guard limit/offset: default 100, max 100, offset>=0). 2. RestAPI gRPC client: copy business.proto into RestAPI/Protos (GrpcServices=Client, mirrors location.proto), register BusinessServiceClient in Program.cs via GrpcSettings:BusinessServiceUrl; add BusinessServiceUrl to appsettings.Development.json and docker-compose restapi env+depends_on. 3. REST surface mirroring Location*: Dtos (BusinessRequest w/ DataAnnotations, BusinessResponse, BusinessListResponse{Page,PageSize,Total,list}); IBusinessService/BusinessService wrapper mapping DTO<->gRPC; BusinessController: GET /businesses?page&pageSize->200 (AC#1), POST /businesses->201+Location / 400 (AC#2), GET /businesses/{id}->200/404 (AC#3 404). 4. Integration tests: replace UnitTest1 with WebApplicationFactory<Program> tests; add Microsoft.AspNetCore.Mvc.Testing (net8); replace BusinessServiceClient with hand-rolled fake subclass (no real BusinessService); cover happy path (list+POST 201+get 200), 400 invalid POST, 404 unknown id; expose public partial class Program. 5. Housekeeping: revert stray docker-compose postgres 5432->5433. Validate: dotnet build + dotnet test.
+Extend TASK-1 to full CRUD + unit tests. 1) BusinessService(server): extract Application.IBusinessService (implemented by BusinessService), depend on it in BusinessGrpc, register in Program.cs DI; make UpdateBusiness return NotFound (not InvalidArgument) when the id is missing. 2) RestAPI: add UpdateAsync(id,req)/DeleteAsync(id) to IBusinessService+BusinessService wrapper (map DTO<->gRPC, RpcException NotFound -> null/false); BusinessController PUT /businesses/{id} (200/404, auto-400) + DELETE /businesses/{id} (204/404). 3) Tests: FakeBusinessServiceClient Update/Delete overrides; BusinessControllerTests PUT(200/404/400)+DELETE(204/404); new RestAPI.Tests/BusinessServiceTests (wrapper mapping + NotFound->null/false); new BusinessService.Tests BusinessGrpcTests (ListBusinesses limit/offset guards, Update/Delete NotFound) via hand-rolled IBusinessService fake. Validate: dotnet build + dotnet test.
 <!-- SECTION:PLAN:END -->
 
 ## Implementation Notes
@@ -44,4 +48,6 @@ Implemented end-to-end in worktree restapi-businessservice:
 - Tests: replaced UnitTest1 with WebApplicationFactory<Program> integration tests using a hand-rolled FakeBusinessServiceClient (no live backend); 5 tests cover happy path (list+paging+POST 201+GET 200), 400 invalid POST, 404 unknown id.
 - Housekeeping: reverted stray docker-compose postgres 5432->5433.
 Validation: dotnet build (solution) succeeds; dotnet test = 10 passed (RestAPI.Tests 5, BusinessService.Tests 5), 0 failed. No new build warnings. Committed locally; not pushed, PR untouched, task left In Progress for human review.
+
+Extended to full CRUD + unit tests (human-directed). Server: extracted Application.IBusinessService (BusinessGrpc now depends on it; registered in Program.cs DI); UpdateBusiness now returns NotFound (was InvalidArgument) when the id is missing. RestAPI: added UpdateAsync(id,req)/DeleteAsync(id) to IBusinessService+BusinessService (DTO<->gRPC map, RpcException NotFound -> null/false); BusinessController PUT /businesses/{id} (200/404, auto-400) + DELETE /businesses/{id} (204/404). Tests: FakeBusinessServiceClient Update/Delete overrides; +5 BusinessController CRUD tests; new BusinessServiceTests (8 wrapper mapping/RpcException tests); new BusinessGrpcTests (6 tests: ListBusinesses limit default/cap, negative-offset clamp, total mapping, Update/Delete NotFound) via hand-rolled FakeBusinessAppService. Validation: dotnet build (0 warnings introduced) + dotnet test = 29 passed (RestAPI.Tests 18, BusinessService.Tests 11), 0 failed.
 <!-- SECTION:NOTES:END -->

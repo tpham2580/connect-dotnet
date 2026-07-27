@@ -74,6 +74,44 @@ public class FakeBusinessServiceClient : GrpcBusiness.BusinessService.BusinessSe
         return Success(new GrpcBusiness.BusinessResponse { Business = created });
     }
 
+    public override AsyncUnaryCall<GrpcBusiness.BusinessResponse> UpdateBusinessAsync(
+        GrpcBusiness.UpdateBusinessRequest request, CallOptions options)
+    {
+        var id = request.Business.Id;
+        if (!_store.ContainsKey(id))
+        {
+            return Failure<GrpcBusiness.BusinessResponse>(
+                new RpcException(new Status(StatusCode.NotFound, $"Business with ID {id} not found.")));
+        }
+
+        var updated = new GrpcBusiness.Business
+        {
+            Id = id,
+            Name = request.Business.Name,
+            Address = request.Business.Address,
+            City = request.Business.City,
+            State = request.Business.State,
+            Country = request.Business.Country,
+            Latitude = request.Business.Latitude,
+            Longitude = request.Business.Longitude
+        };
+
+        _store[id] = updated;
+        return Success(new GrpcBusiness.BusinessResponse { Business = updated });
+    }
+
+    public override AsyncUnaryCall<GrpcBusiness.DeleteItemByIdResponse> DeleteBusinessAsync(
+        GrpcBusiness.BusinessByIdRequest request, CallOptions options)
+    {
+        if (_store.TryRemove(request.Id, out _))
+        {
+            return Success(new GrpcBusiness.DeleteItemByIdResponse { Success = true });
+        }
+
+        return Failure<GrpcBusiness.DeleteItemByIdResponse>(
+            new RpcException(new Status(StatusCode.NotFound, $"Business with ID {request.Id} not found.")));
+    }
+
     private static AsyncUnaryCall<T> Success<T>(T response) =>
         new AsyncUnaryCall<T>(
             Task.FromResult(response),

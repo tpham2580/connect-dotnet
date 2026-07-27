@@ -51,4 +51,28 @@ public class BusinessController : ControllerBase
         var created = await _businessService.CreateAsync(request);
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
+
+    [HttpPut("{id:long}")]
+    public async Task<IActionResult> Update(long id, [FromBody] BusinessRequest request)
+    {
+        var updated = await _businessService.UpdateAsync(id, request);
+        if (updated == null)
+        {
+            return NotFound();
+        }
+
+        return Ok(updated);
+    }
+
+    [HttpDelete("{id:long}")]
+    public async Task<IActionResult> Delete(long id)
+    {
+        var deleted = await _businessService.DeleteAsync(id);
+        if (!deleted)
+        {
+            return NotFound();
+        }
+
+        return NoContent();
+    }
 }

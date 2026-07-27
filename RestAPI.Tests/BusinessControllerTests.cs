@@ -124,4 +124,77 @@ public class BusinessControllerTests
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
+
+    [Fact]
+    public async Task UpdateBusiness_WithValidPayload_Returns200AndPersists()
+    {
+        await using var factory = new BusinessApiFactory(new[] { SeedBusiness(1, "Alpha") });
+        var client = factory.CreateClient();
+
+        var update = ValidRequest();
+        update.Name = "Updated Business";
+
+        var putResponse = await client.PutAsJsonAsync("/businesses/1", update);
+
+        Assert.Equal(HttpStatusCode.OK, putResponse.StatusCode);
+
+        var updated = await putResponse.Content.ReadFromJsonAsync<BusinessResponse>();
+        Assert.NotNull(updated);
+        Assert.Equal(1, updated!.Id);
+        Assert.Equal("Updated Business", updated.Name);
+
+        var getResponse = await client.GetAsync("/businesses/1");
+        var fetched = await getResponse.Content.ReadFromJsonAsync<BusinessResponse>();
+        Assert.Equal("Updated Business", fetched!.Name);
+    }
+
+    [Fact]
+    public async Task UpdateBusiness_WithUnknownId_Returns404()
+    {
+        await using var factory = new BusinessApiFactory();
+        var client = factory.CreateClient();
+
+        var response = await client.PutAsJsonAsync("/businesses/99999", ValidRequest());
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task UpdateBusiness_WithInvalidPayload_Returns400()
+    {
+        await using var factory = new BusinessApiFactory(new[] { SeedBusiness(1, "Alpha") });
+        var client = factory.CreateClient();
+
+        var invalid = ValidRequest();
+        invalid.Name = string.Empty;   // violates [Required]
+        invalid.Latitude = 999;        // violates [Range(-90, 90)]
+
+        var response = await client.PutAsJsonAsync("/businesses/1", invalid);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task DeleteBusiness_WithExistingId_Returns204AndIsGone()
+    {
+        await using var factory = new BusinessApiFactory(new[] { SeedBusiness(1, "Alpha") });
+        var client = factory.CreateClient();
+
+        var deleteResponse = await client.DeleteAsync("/businesses/1");
+        Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);
+
+        var getResponse = await client.GetAsync("/businesses/1");
+        Assert.Equal(HttpStatusCode.NotFound, getResponse.StatusCode);
+    }
+
+    [Fact]
+    public async Task DeleteBusiness_WithUnknownId_Returns404()
+    {
+        await using var factory = new BusinessApiFactory();
+        var client = factory.CreateClient();
+
+        var response = await client.DeleteAsync("/businesses/99999");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
 }

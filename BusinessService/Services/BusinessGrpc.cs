@@ -10,9 +10,9 @@ public class BusinessGrpc : Grpc.BusinessService.BusinessService.BusinessService
     private const int MaxPageSize = 100;
 
     private readonly ILogger<BusinessGrpc> _log;
-    private readonly BusinessService.Application.BusinessService _service;
+    private readonly IBusinessService _service;
 
-    public BusinessGrpc(ILogger<BusinessGrpc> log, BusinessService.Application.BusinessService service)
+    public BusinessGrpc(ILogger<BusinessGrpc> log, IBusinessService service)
     {
         _log = log;
         _service = service;
@@ -107,7 +107,7 @@ public class BusinessGrpc : Grpc.BusinessService.BusinessService.BusinessService
 
         if (response == null)
         {
-            throw new RpcException(new Status(StatusCode.InvalidArgument, $"Unable to update Business. Id not found."));
+            throw new RpcException(new Status(StatusCode.NotFound, $"Business with ID {business.Id} not found."));
         }
 
         return new BusinessResponse

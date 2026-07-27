@@ -7,4 +7,6 @@ public interface IBusinessService
     Task<BusinessListResponse> ListAsync(int page, int pageSize);
     Task<BusinessResponse?> GetByIdAsync(long id);
     Task<BusinessResponse> CreateAsync(BusinessRequest request);
+    Task<BusinessResponse?> UpdateAsync(long id, BusinessRequest request);
+    Task<bool> DeleteAsync(long id);
 }
