@@ -1,13 +1,13 @@
 namespace RestAPI.Dtos;
 
-public class BusinessResponse
+public sealed class BusinessResponse
 {
-    public long Id { get; set; }
-    public string Name { get; set; } = string.Empty;
-    public string Address { get; set; } = string.Empty;
-    public string City { get; set; } = string.Empty;
-    public string State { get; set; } = string.Empty;
-    public string Country { get; set; } = string.Empty;
-    public double Latitude { get; set; }
-    public double Longitude { get; set; }
+    public required long Id { get; init; }
+    public required string Name { get; init; }
+    public required string Address { get; init; }
+    public required string City { get; init; }
+    public required string State { get; init; }
+    public required string Country { get; init; }
+    public required double Latitude { get; init; }
+    public required double Longitude { get; init; }
 }

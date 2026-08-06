@@ -1,9 +1,9 @@
 namespace RestAPI.Dtos;
 
-public class BusinessListResponse
+public sealed class BusinessListResponse
 {
-    public int Page { get; set; }
-    public int PageSize { get; set; }
-    public long Total { get; set; }
-    public List<BusinessResponse> Businesses { get; set; } = new();
+    public required int Page { get; init; }
+    public required int PageSize { get; init; }
+    public required long Total { get; init; }
+    public required IReadOnlyList<BusinessResponse> Businesses { get; init; }
 }

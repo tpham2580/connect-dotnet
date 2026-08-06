@@ -19,14 +19,16 @@ public class BusinessControllerTests
         Longitude = -122.3
     };
 
-    private static BusinessRequest ValidRequest() => new BusinessRequest
+    private static BusinessRequest ValidRequest(
+        string name = "New Business",
+        double latitude = 45.52) => new BusinessRequest
     {
-        Name = "New Business",
+        Name = name,
         Address = "456 Market Ave",
         City = "Portland",
         State = "OR",
         Country = "USA",
-        Latitude = 45.52,
+        Latitude = latitude,
         Longitude = -122.68
     };
 
@@ -105,9 +107,7 @@ public class BusinessControllerTests
         await using var factory = new BusinessApiFactory();
         var client = factory.CreateClient();
 
-        var invalid = ValidRequest();
-        invalid.Name = string.Empty;   // violates [Required]
-        invalid.Latitude = 999;        // violates [Range(-90, 90)]
+        var invalid = ValidRequest(name: string.Empty, latitude: 999);
 
         var response = await client.PostAsJsonAsync("/v1/businesses", invalid);
 
@@ -131,8 +131,7 @@ public class BusinessControllerTests
         await using var factory = new BusinessApiFactory(new[] { SeedBusiness(1, "Alpha") });
         var client = factory.CreateClient();
 
-        var update = ValidRequest();
-        update.Name = "Updated Business";
+        var update = ValidRequest(name: "Updated Business");
 
         var putResponse = await client.PutAsJsonAsync("/v1/businesses/1", update);
 
@@ -165,9 +164,7 @@ public class BusinessControllerTests
         await using var factory = new BusinessApiFactory(new[] { SeedBusiness(1, "Alpha") });
         var client = factory.CreateClient();
 
-        var invalid = ValidRequest();
-        invalid.Name = string.Empty;   // violates [Required]
-        invalid.Latitude = 999;        // violates [Range(-90, 90)]
+        var invalid = ValidRequest(name: string.Empty, latitude: 999);
 
         var response = await client.PutAsJsonAsync("/v1/businesses/1", invalid);
 

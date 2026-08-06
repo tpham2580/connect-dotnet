@@ -4,7 +4,7 @@ title: Expose BusinessService via REST API
 status: In Progress
 assignee: []
 created_date: '2026-07-23 01:58'
-updated_date: '2026-07-27 02:28'
+updated_date: '2026-08-06 04:16'
 labels:
   - backend
   - api
@@ -50,4 +50,8 @@ Implemented end-to-end in worktree restapi-businessservice:
 Validation: dotnet build (solution) succeeds; dotnet test = 10 passed (RestAPI.Tests 5, BusinessService.Tests 5), 0 failed. No new build warnings. Committed locally; not pushed, PR untouched, task left In Progress for human review.
 
 Extended to full CRUD + unit tests (human-directed). Server: extracted Application.IBusinessService (BusinessGrpc now depends on it; registered in Program.cs DI); UpdateBusiness now returns NotFound (was InvalidArgument) when the id is missing. RestAPI: added UpdateAsync(id,req)/DeleteAsync(id) to IBusinessService+BusinessService (DTO<->gRPC map, RpcException NotFound -> null/false); BusinessController PUT /businesses/{id} (200/404, auto-400) + DELETE /businesses/{id} (204/404). Tests: FakeBusinessServiceClient Update/Delete overrides; +5 BusinessController CRUD tests; new BusinessServiceTests (8 wrapper mapping/RpcException tests); new BusinessGrpcTests (6 tests: ListBusinesses limit default/cap, negative-offset clamp, total mapping, Update/Delete NotFound) via hand-rolled FakeBusinessAppService. Validation: dotnet build (0 warnings introduced) + dotnet test = 29 passed (RestAPI.Tests 18, BusinessService.Tests 11), 0 failed.
+
+User approved DTO structural refinement: convert TASK-1 Business request/response contracts to sealed immutable classes with required init-only properties, and expose paged businesses as IReadOnlyList. This intentionally avoids record-generated value semantics because records do not reduce heap allocation for these reference DTOs.
+
+Implemented immutable Business DTO contracts: sealed classes, required init-only properties, and IReadOnlyList for paged response items. Updated integration test builders to construct invalid/updated requests without post-construction mutation. RestAPI.Tests: 18 passed, 0 failed.
 <!-- SECTION:NOTES:END -->
