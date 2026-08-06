@@ -4,9 +4,9 @@ namespace RestAPI.Services;
 
 public interface IBusinessService
 {
-    Task<BusinessListResponse> ListAsync(int page, int pageSize);
-    Task<BusinessResponse?> GetByIdAsync(long id);
-    Task<BusinessResponse> CreateAsync(BusinessRequest request);
-    Task<BusinessResponse?> UpdateAsync(long id, BusinessRequest request);
-    Task<bool> DeleteAsync(long id);
+    Task<BusinessListResponse> ListAsync(int page, int pageSize, CancellationToken cancellationToken);
+    Task<BusinessResponse?> GetByIdAsync(long id, CancellationToken cancellationToken);
+    Task<BusinessResponse> CreateAsync(BusinessRequest request, CancellationToken cancellationToken);
+    Task<BusinessResponse?> UpdateAsync(long id, BusinessRequest request, CancellationToken cancellationToken);
+    Task<bool> DeleteAsync(long id, CancellationToken cancellationToken);
 }

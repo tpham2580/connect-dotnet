@@ -6,6 +6,8 @@ namespace RestAPI.Services;
 
 public class BusinessService : IBusinessService
 {
+    private const int MaxPageSize = 100;
+
     private readonly ILogger<BusinessService> _logger;
     private readonly GrpcBusiness.BusinessService.BusinessServiceClient _client;
 
@@ -17,9 +19,25 @@ public class BusinessService : IBusinessService
         _client = client;
     }
 
-    public async Task<BusinessListResponse> ListAsync(int page, int pageSize)
+    public async Task<BusinessListResponse> ListAsync(
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken)
     {
-        var offset = (page - 1) * pageSize;
+        ArgumentOutOfRangeException.ThrowIfLessThan(page, 1);
+        ArgumentOutOfRangeException.ThrowIfLessThan(pageSize, 1);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(pageSize, MaxPageSize);
+
+        var longOffset = (long)(page - 1) * pageSize;
+        if (longOffset > int.MaxValue)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(page),
+                page,
+                "The requested page exceeds the supported paging range.");
+        }
+
+        var offset = (int)longOffset;
 
         _logger.LogInformation("Listing businesses. Page: {Page}, PageSize: {PageSize}", page, pageSize);
 
@@ -27,7 +45,7 @@ public class BusinessService : IBusinessService
         {
             Limit = pageSize,
             Offset = offset
-        });
+        }, cancellationToken: cancellationToken);
 
         return new BusinessListResponse
         {
@@ -38,7 +56,7 @@ public class BusinessService : IBusinessService
         };
     }
 
-    public async Task<BusinessResponse?> GetByIdAsync(long id)
+    public async Task<BusinessResponse?> GetByIdAsync(long id, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Fetching business by id: {Id}", id);
 
@@ -47,7 +65,7 @@ public class BusinessService : IBusinessService
             var grpcResponse = await _client.GetBusinessByIdAsync(new GrpcBusiness.BusinessByIdRequest
             {
                 Id = id
-            });
+            }, cancellationToken: cancellationToken);
 
             return ToResponse(grpcResponse.Business);
         }
@@ -58,7 +76,9 @@ public class BusinessService : IBusinessService
         }
     }
 
-    public async Task<BusinessResponse> CreateAsync(BusinessRequest request)
+    public async Task<BusinessResponse> CreateAsync(
+        BusinessRequest request,
+        CancellationToken cancellationToken)
     {
         _logger.LogInformation("Creating business: {Name}", request.Name);
 
@@ -74,12 +94,15 @@ public class BusinessService : IBusinessService
                 Latitude = request.Latitude,
                 Longitude = request.Longitude
             }
-        });
+        }, cancellationToken: cancellationToken);
 
         return ToResponse(grpcResponse.Business);
     }
 
-    public async Task<BusinessResponse?> UpdateAsync(long id, BusinessRequest request)
+    public async Task<BusinessResponse?> UpdateAsync(
+        long id,
+        BusinessRequest request,
+        CancellationToken cancellationToken)
     {
         _logger.LogInformation("Updating business. Id: {Id}", id);
 
@@ -98,7 +121,7 @@ public class BusinessService : IBusinessService
                     Latitude = request.Latitude,
                     Longitude = request.Longitude
                 }
-            });
+            }, cancellationToken: cancellationToken);
 
             return ToResponse(grpcResponse.Business);
         }
@@ -109,7 +132,7 @@ public class BusinessService : IBusinessService
         }
     }
 
-    public async Task<bool> DeleteAsync(long id)
+    public async Task<bool> DeleteAsync(long id, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Deleting business. Id: {Id}", id);
 
@@ -118,7 +141,7 @@ public class BusinessService : IBusinessService
             var grpcResponse = await _client.DeleteBusinessAsync(new GrpcBusiness.BusinessByIdRequest
             {
                 Id = id
-            });
+            }, cancellationToken: cancellationToken);
 
             return grpcResponse.Success;
         }

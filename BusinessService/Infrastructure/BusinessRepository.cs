@@ -14,10 +14,10 @@ public class BusinessRepository
         _log = log;
     }
 
-    public async Task<BusinessModel?> GetBusinessByIdAsync(long id)
+    public async Task<BusinessModel?> GetBusinessByIdAsync(long id, CancellationToken cancellationToken)
     {
         await using var connection = _connectionFactory.CreateConnection();
-        await connection.OpenAsync();
+        await connection.OpenAsync(cancellationToken);
 
         const string query = @"
             SELECT business_id, name, address, city, state, country, latitude, longitude
@@ -28,9 +28,9 @@ public class BusinessRepository
         await using var cmd = new NpgsqlCommand(query, connection);
         cmd.Parameters.AddWithValue("@id", id);
 
-        await using var reader = await cmd.ExecuteReaderAsync();
+        await using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
 
-        if (!await reader.ReadAsync())
+        if (!await reader.ReadAsync(cancellationToken))
         {
             return null;
         }
@@ -48,10 +48,12 @@ public class BusinessRepository
         };
     }
 
-    public async Task<List<BusinessModel>> GetAllBusinessesByIdsAsync(List<long> ids)
+    public async Task<List<BusinessModel>> GetAllBusinessesByIdsAsync(
+        List<long> ids,
+        CancellationToken cancellationToken)
     {
         await using var connection = _connectionFactory.CreateConnection();
-        await connection.OpenAsync();
+        await connection.OpenAsync(cancellationToken);
 
         const string query = @"
             SELECT business_id, name, address, city, state, country, latitude, longitude
@@ -62,10 +64,10 @@ public class BusinessRepository
         await using var cmd = new NpgsqlCommand(query, connection);
         cmd.Parameters.AddWithValue("@ids", ids);
 
-        await using var reader = await cmd.ExecuteReaderAsync();
+        await using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
 
         var results = new List<BusinessModel>();
-        while (await reader.ReadAsync())
+        while (await reader.ReadAsync(cancellationToken))
         {
             results.Add(new BusinessModel
             {
@@ -83,10 +85,13 @@ public class BusinessRepository
         return results;
     }
 
-    public async Task<(List<BusinessModel> Businesses, long Total)> GetBusinessesAsync(int limit, int offset)
+    public async Task<(List<BusinessModel> Businesses, long Total)> GetBusinessesAsync(
+        int limit,
+        int offset,
+        CancellationToken cancellationToken)
     {
         await using var connection = _connectionFactory.CreateConnection();
-        await connection.OpenAsync();
+        await connection.OpenAsync(cancellationToken);
 
         const string pageQuery = @"
             SELECT business_id, name, address, city, state, country, latitude, longitude
@@ -102,8 +107,8 @@ public class BusinessRepository
             cmd.Parameters.AddWithValue("@limit", limit);
             cmd.Parameters.AddWithValue("@offset", offset);
 
-            await using var reader = await cmd.ExecuteReaderAsync();
-            while (await reader.ReadAsync())
+            await using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
+            while (await reader.ReadAsync(cancellationToken))
             {
                 results.Add(new BusinessModel
                 {
@@ -124,17 +129,19 @@ public class BusinessRepository
         const string countQuery = "SELECT COUNT(*) FROM business;";
 
         await using var countCmd = new NpgsqlCommand(countQuery, connection);
-        var total = (long)(await countCmd.ExecuteScalarAsync() ?? 0L);
+        var total = (long)(await countCmd.ExecuteScalarAsync(cancellationToken) ?? 0L);
 
         return (results, total);
     }
 
-    public async Task<BusinessModel?> CreateBusinessAsync(BusinessModel business)
+    public async Task<BusinessModel?> CreateBusinessAsync(
+        BusinessModel business,
+        CancellationToken cancellationToken)
     {
         _log.LogInformation("Received Business Model: \n{@business}", business);
 
         await using var connection = _connectionFactory.CreateConnection();
-        await connection.OpenAsync();
+        await connection.OpenAsync(cancellationToken);
 
         const string query = @"
             INSERT INTO business (
@@ -154,9 +161,9 @@ public class BusinessRepository
         cmd.Parameters.AddWithValue("@latitude", business.Latitude);
         cmd.Parameters.AddWithValue("@longitude", business.Longitude);
 
-        await using var reader = await cmd.ExecuteReaderAsync();
+        await using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
 
-        if (!await reader.ReadAsync())
+        if (!await reader.ReadAsync(cancellationToken))
         {
             return null;
         }
@@ -185,12 +192,14 @@ public class BusinessRepository
         };
     }
 
-    public async Task<BusinessModel?> UpdateBusinessAsync(BusinessModel business)
+    public async Task<BusinessModel?> UpdateBusinessAsync(
+        BusinessModel business,
+        CancellationToken cancellationToken)
     {
         _log.LogInformation("Received Business Model: \n{@business}", business);
 
         await using var connection = _connectionFactory.CreateConnection();
-        await connection.OpenAsync();
+        await connection.OpenAsync(cancellationToken);
 
         const string query = @"
             UPDATE business
@@ -216,9 +225,9 @@ public class BusinessRepository
         cmd.Parameters.AddWithValue("@latitude", business.Latitude);
         cmd.Parameters.AddWithValue("@longitude", business.Longitude);
 
-        await using var reader = await cmd.ExecuteReaderAsync();
+        await using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
 
-        if (!await reader.ReadAsync())
+        if (!await reader.ReadAsync(cancellationToken))
         {
             return null;
         }
@@ -247,10 +256,10 @@ public class BusinessRepository
         };
     }
 
-    public async Task<bool> DeleteBusinessByIdAsync(long id)
+    public async Task<bool> DeleteBusinessByIdAsync(long id, CancellationToken cancellationToken)
     {
         await using var connection = _connectionFactory.CreateConnection();
-        await connection.OpenAsync();
+        await connection.OpenAsync(cancellationToken);
 
         const string query = @"
             DELETE FROM business
@@ -260,7 +269,7 @@ public class BusinessRepository
         await using var cmd = new NpgsqlCommand(query, connection);
         cmd.Parameters.AddWithValue("@id", id);
 
-        var affectedRows = await cmd.ExecuteNonQueryAsync();
+        var affectedRows = await cmd.ExecuteNonQueryAsync(cancellationToken);
         _log.LogInformation("DB finished being called. Number of affected rows: {@affectedRows}", affectedRows);
         return affectedRows > 0;
     }

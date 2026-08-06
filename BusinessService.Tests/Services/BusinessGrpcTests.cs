@@ -43,7 +43,9 @@ public class BusinessGrpcTests
         var fake = new FakeBusinessAppService();
         var sut = CreateSut(fake);
 
-        await sut.ListBusinesses(new ListBusinessesRequest { Limit = 0, Offset = 0 }, null!);
+        await sut.ListBusinesses(
+            new ListBusinessesRequest { Limit = 0, Offset = 0 },
+            TestServerCallContext.Create());
 
         Assert.Equal(100, fake.LastLimit);
     }
@@ -54,7 +56,9 @@ public class BusinessGrpcTests
         var fake = new FakeBusinessAppService();
         var sut = CreateSut(fake);
 
-        await sut.ListBusinesses(new ListBusinessesRequest { Limit = 500, Offset = 0 }, null!);
+        await sut.ListBusinesses(
+            new ListBusinessesRequest { Limit = 500, Offset = 0 },
+            TestServerCallContext.Create());
 
         Assert.Equal(100, fake.LastLimit);
     }
@@ -65,7 +69,9 @@ public class BusinessGrpcTests
         var fake = new FakeBusinessAppService();
         var sut = CreateSut(fake);
 
-        await sut.ListBusinesses(new ListBusinessesRequest { Limit = 10, Offset = -5 }, null!);
+        await sut.ListBusinesses(
+            new ListBusinessesRequest { Limit = 10, Offset = -5 },
+            TestServerCallContext.Create());
 
         Assert.Equal(0, fake.LastOffset);
     }
@@ -79,7 +85,9 @@ public class BusinessGrpcTests
         };
         var sut = CreateSut(fake);
 
-        var response = await sut.ListBusinesses(new ListBusinessesRequest { Limit = 50, Offset = 10 }, null!);
+        var response = await sut.ListBusinesses(
+            new ListBusinessesRequest { Limit = 50, Offset = 10 },
+            TestServerCallContext.Create());
 
         Assert.Equal(50, fake.LastLimit);
         Assert.Equal(10, fake.LastOffset);
@@ -89,13 +97,29 @@ public class BusinessGrpcTests
     }
 
     [Fact]
+    public async Task ListBusinesses_PropagatesCancellationToken()
+    {
+        var fake = new FakeBusinessAppService();
+        var sut = CreateSut(fake);
+        using var cancellationSource = new CancellationTokenSource();
+
+        await sut.ListBusinesses(
+            new ListBusinessesRequest { Limit = 10 },
+            TestServerCallContext.Create(cancellationSource.Token));
+
+        Assert.Equal(cancellationSource.Token, fake.LastCancellationToken);
+    }
+
+    [Fact]
     public async Task UpdateBusiness_Throws_NotFound_WhenServiceReturnsNull()
     {
         var fake = new FakeBusinessAppService { UpdateResult = null };
         var sut = CreateSut(fake);
 
         var ex = await Assert.ThrowsAsync<RpcException>(() =>
-            sut.UpdateBusiness(new UpdateBusinessRequest { Business = ValidGrpcBusiness(5) }, null!));
+            sut.UpdateBusiness(
+                new UpdateBusinessRequest { Business = ValidGrpcBusiness(5) },
+                TestServerCallContext.Create()));
 
         Assert.Equal(StatusCode.NotFound, ex.StatusCode);
     }
@@ -107,7 +131,9 @@ public class BusinessGrpcTests
         var sut = CreateSut(fake);
 
         var ex = await Assert.ThrowsAsync<RpcException>(() =>
-            sut.DeleteBusiness(new BusinessByIdRequest { Id = 9 }, null!));
+            sut.DeleteBusiness(
+                new BusinessByIdRequest { Id = 9 },
+                TestServerCallContext.Create()));
 
         Assert.Equal(StatusCode.NotFound, ex.StatusCode);
     }

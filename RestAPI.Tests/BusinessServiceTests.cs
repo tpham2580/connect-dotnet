@@ -46,7 +46,7 @@ public class BusinessServiceTests
     {
         var sut = CreateSut();
 
-        var result = await sut.GetByIdAsync(404);
+        var result = await sut.GetByIdAsync(404, CancellationToken.None);
 
         Assert.Null(result);
     }
@@ -56,7 +56,7 @@ public class BusinessServiceTests
     {
         var sut = CreateSut(Seed(1, "Alpha"));
 
-        var result = await sut.GetByIdAsync(1);
+        var result = await sut.GetByIdAsync(1, CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.Equal(1, result!.Id);
@@ -71,7 +71,7 @@ public class BusinessServiceTests
     {
         var sut = CreateSut(Seed(1, "Alpha"), Seed(2, "Beta"), Seed(3, "Gamma"));
 
-        var result = await sut.ListAsync(page: 2, pageSize: 2);
+        var result = await sut.ListAsync(page: 2, pageSize: 2, CancellationToken.None);
 
         Assert.Equal(2, result.Page);
         Assert.Equal(2, result.PageSize);
@@ -80,12 +80,39 @@ public class BusinessServiceTests
         Assert.Equal(3, result.Businesses[0].Id);
     }
 
+    [Theory]
+    [InlineData(0, 20)]
+    [InlineData(1, 0)]
+    [InlineData(1, 101)]
+    [InlineData(int.MaxValue, 2)]
+    public async Task ListAsync_InvalidPaging_ThrowsArgumentOutOfRange(int page, int pageSize)
+    {
+        var sut = CreateSut();
+
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(
+            () => sut.ListAsync(page, pageSize, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task ListAsync_PropagatesCancellationToken()
+    {
+        var client = new FakeBusinessServiceClient();
+        var sut = new RestAPI.Services.BusinessService(
+            NullLogger<RestAPI.Services.BusinessService>.Instance,
+            client);
+        using var cancellationSource = new CancellationTokenSource();
+
+        await sut.ListAsync(1, 20, cancellationSource.Token);
+
+        Assert.Equal(cancellationSource.Token, client.LastCancellationToken);
+    }
+
     [Fact]
     public async Task CreateAsync_ReturnsMappedResponseWithGeneratedId()
     {
         var sut = CreateSut();
 
-        var result = await sut.CreateAsync(ValidRequest());
+        var result = await sut.CreateAsync(ValidRequest(), CancellationToken.None);
 
         Assert.True(result.Id > 0);
         Assert.Equal("New Business", result.Name);
@@ -97,7 +124,7 @@ public class BusinessServiceTests
     {
         var sut = CreateSut();
 
-        var result = await sut.UpdateAsync(404, ValidRequest());
+        var result = await sut.UpdateAsync(404, ValidRequest(), CancellationToken.None);
 
         Assert.Null(result);
     }
@@ -107,7 +134,7 @@ public class BusinessServiceTests
     {
         var sut = CreateSut(Seed(1, "Alpha"));
 
-        var result = await sut.UpdateAsync(1, ValidRequest("Renamed"));
+        var result = await sut.UpdateAsync(1, ValidRequest("Renamed"), CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.Equal(1, result!.Id);
@@ -119,7 +146,7 @@ public class BusinessServiceTests
     {
         var sut = CreateSut();
 
-        Assert.False(await sut.DeleteAsync(404));
+        Assert.False(await sut.DeleteAsync(404, CancellationToken.None));
     }
 
     [Fact]
@@ -127,6 +154,6 @@ public class BusinessServiceTests
     {
         var sut = CreateSut(Seed(1, "Alpha"));
 
-        Assert.True(await sut.DeleteAsync(1));
+        Assert.True(await sut.DeleteAsync(1, CancellationToken.None));
     }
 }

@@ -76,6 +76,21 @@ public class BusinessControllerTests
         Assert.Equal(3, body.Businesses[0].Id);
     }
 
+    [Theory]
+    [InlineData("/v1/businesses?page=0&pageSize=20")]
+    [InlineData("/v1/businesses?page=1&pageSize=0")]
+    [InlineData("/v1/businesses?page=1&pageSize=101")]
+    [InlineData("/v1/businesses?page=2147483647&pageSize=2")]
+    public async Task GetBusinesses_WithInvalidPaging_Returns400(string requestUri)
+    {
+        await using var factory = new BusinessApiFactory();
+        var client = factory.CreateClient();
+
+        var response = await client.GetAsync(requestUri);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
     [Fact]
     public async Task CreateBusiness_WithValidPayload_Returns201AndIsRetrievable()
     {

@@ -20,7 +20,7 @@ public class BusinessGrpc : Grpc.BusinessService.BusinessService.BusinessService
 
     public override async Task<BusinessResponse> GetBusinessById(BusinessByIdRequest request, ServerCallContext context)
     {
-        var response = await _service.GetBusinessByIdAsync(request.Id);
+        var response = await _service.GetBusinessByIdAsync(request.Id, context.CancellationToken);
 
         if (response == null)
         {
@@ -40,7 +40,9 @@ public class BusinessGrpc : Grpc.BusinessService.BusinessService.BusinessService
             throw new RpcException(new Status(StatusCode.InvalidArgument, "List of business IDs must not be empty."));
         }
 
-        var response = await _service.GetAllBusinessesByIdsAsync(request.Ids.ToList());
+        var response = await _service.GetAllBusinessesByIdsAsync(
+            request.Ids.ToList(),
+            context.CancellationToken);
 
         return new GetAllBusinessesByIdsResponse
         {
@@ -53,7 +55,10 @@ public class BusinessGrpc : Grpc.BusinessService.BusinessService.BusinessService
         var limit = request.Limit <= 0 ? DefaultPageSize : Math.Min(request.Limit, MaxPageSize);
         var offset = request.Offset < 0 ? 0 : request.Offset;
 
-        var (businesses, total) = await _service.GetBusinessesAsync(limit, offset);
+        var (businesses, total) = await _service.GetBusinessesAsync(
+            limit,
+            offset,
+            context.CancellationToken);
 
         var response = new ListBusinessesResponse { Total = total };
         response.Businesses.AddRange(businesses.Select(BusinessMapper.ToGrpc));
@@ -75,7 +80,7 @@ public class BusinessGrpc : Grpc.BusinessService.BusinessService.BusinessService
             throw new RpcException(new Status(StatusCode.InvalidArgument, message));
         }
 
-        var response = await _service.CreateBusinessAsync(business);
+        var response = await _service.CreateBusinessAsync(business, context.CancellationToken);
 
         if (response == null)
         {
@@ -103,7 +108,7 @@ public class BusinessGrpc : Grpc.BusinessService.BusinessService.BusinessService
             throw new RpcException(new Status(StatusCode.InvalidArgument, message));
         }
 
-        var response = await _service.UpdateBusinessAsync(business);
+        var response = await _service.UpdateBusinessAsync(business, context.CancellationToken);
 
         if (response == null)
         {
@@ -118,7 +123,7 @@ public class BusinessGrpc : Grpc.BusinessService.BusinessService.BusinessService
 
     public override async Task<DeleteItemByIdResponse> DeleteBusiness(BusinessByIdRequest request, ServerCallContext context)
     {
-        var response = await _service.DeleteBusinessByIdAsync(request.Id);
+        var response = await _service.DeleteBusinessByIdAsync(request.Id, context.CancellationToken);
 
         if (!response)
         {

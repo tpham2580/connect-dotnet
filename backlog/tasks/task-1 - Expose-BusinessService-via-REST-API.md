@@ -4,7 +4,7 @@ title: Expose BusinessService via REST API
 status: In Progress
 assignee: []
 created_date: '2026-07-23 01:58'
-updated_date: '2026-08-06 04:16'
+updated_date: '2026-08-06 04:49'
 labels:
   - backend
   - api
@@ -24,12 +24,12 @@ Add REST endpoints (CRUD) for BusinessService so external clients can manage bus
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 GET /businesses returns paged results
-- [ ] #2 POST /businesses validates payload and returns 201
+- [ ] #1 GET /v1/businesses returns paged results
+- [ ] #2 POST /v1/businesses validates payload and returns 201
 - [ ] #3 Integration tests cover happy path and 400/404
-- [ ] #4 GET /businesses/{id} returns 200 with the business or 404 when unknown
-- [ ] #5 PUT /businesses/{id} updates a business (200) and returns 404 for an unknown id
-- [ ] #6 DELETE /businesses/{id} removes a business (204) and returns 404 for an unknown id
+- [ ] #4 GET /v1/businesses/{id} returns 200 with the business or 404 when unknown
+- [ ] #5 PUT /v1/businesses/{id} updates a business (200) and returns 404 for an unknown id
+- [ ] #6 DELETE /v1/businesses/{id} removes a business (204) and returns 404 for an unknown id
 - [ ] #7 Unit tests cover ListBusinesses paging guards and the RestAPI BusinessService gRPC mapping
 <!-- AC:END -->
 
@@ -54,4 +54,8 @@ Extended to full CRUD + unit tests (human-directed). Server: extracted Applicati
 User approved DTO structural refinement: convert TASK-1 Business request/response contracts to sealed immutable classes with required init-only properties, and expose paged businesses as IReadOnlyList. This intentionally avoids record-generated value semantics because records do not reduce heap allocation for these reference DTOs.
 
 Implemented immutable Business DTO contracts: sealed classes, required init-only properties, and IReadOnlyList for paged response items. Updated integration test builders to construct invalid/updated requests without post-construction mutation. RestAPI.Tests: 18 passed, 0 failed.
+
+Review decision: /v1/businesses is the intended versioned API contract; corrected acceptance-criteria route wording. Paging hardening plan: reject page/pageSize outside supported ranges with automatic HTTP 400 validation, reject combinations whose gRPC int32 offset would overflow, retain defensive service-layer guards, and add HTTP plus unit regression coverage.
+
+Addressed review findings: paging now returns 400 for page/pageSize outside supported ranges and for combinations exceeding the gRPC int32 offset; the RestAPI wrapper also guards direct callers. Cancellation now flows from ASP.NET through the RestAPI gRPC client, BusinessService ServerCallContext/application layer, and every Npgsql async operation. Added HTTP, wrapper, and gRPC propagation regression tests. Validation: solution build succeeded; 39 tests passed (RestAPI.Tests 27, BusinessService.Tests 12), 0 failed.
 <!-- SECTION:NOTES:END -->

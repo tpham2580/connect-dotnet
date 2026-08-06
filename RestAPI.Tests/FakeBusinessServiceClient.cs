@@ -13,6 +13,8 @@ public class FakeBusinessServiceClient : GrpcBusiness.BusinessService.BusinessSe
     private readonly ConcurrentDictionary<long, GrpcBusiness.Business> _store = new();
     private long _nextId;
 
+    public CancellationToken LastCancellationToken { get; private set; }
+
     public FakeBusinessServiceClient(IEnumerable<GrpcBusiness.Business>? seed = null)
     {
         if (seed == null)
@@ -33,6 +35,8 @@ public class FakeBusinessServiceClient : GrpcBusiness.BusinessService.BusinessSe
     public override AsyncUnaryCall<GrpcBusiness.ListBusinessesResponse> ListBusinessesAsync(
         GrpcBusiness.ListBusinessesRequest request, CallOptions options)
     {
+        LastCancellationToken = options.CancellationToken;
+
         var ordered = _store.Values.OrderBy(b => b.Id).ToList();
         var limit = request.Limit <= 0 ? ordered.Count : request.Limit;
         var page = ordered.Skip(request.Offset).Take(limit);
