@@ -6,6 +6,7 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
 COPY RestAPI/RestAPI.csproj RestAPI/
+COPY Protos/ Protos/
 RUN dotnet restore RestAPI/RestAPI.csproj
 
 COPY RestAPI/ RestAPI/

@@ -67,30 +67,42 @@ public class BusinessServiceTests
     }
 
     [Fact]
-    public async Task ListAsync_MapsPagingAndTotal()
+    public async Task ListAsync_MapsCursorAndTotal()
     {
         var sut = CreateSut(Seed(1, "Alpha"), Seed(2, "Beta"), Seed(3, "Gamma"));
 
-        var result = await sut.ListAsync(page: 2, pageSize: 2, CancellationToken.None);
+        var result = await sut.ListAsync(after: 0, pageSize: 2, CancellationToken.None);
 
-        Assert.Equal(2, result.Page);
         Assert.Equal(2, result.PageSize);
         Assert.Equal(3, result.Total);
+        Assert.Equal(2, result.Businesses.Count);
+        Assert.True(result.HasMore);
+        Assert.Equal(2, result.NextCursor);
+    }
+
+    [Fact]
+    public async Task ListAsync_LastPage_HasNoCursor()
+    {
+        var sut = CreateSut(Seed(1, "Alpha"), Seed(2, "Beta"), Seed(3, "Gamma"));
+
+        var result = await sut.ListAsync(after: 2, pageSize: 2, CancellationToken.None);
+
         Assert.Single(result.Businesses);
         Assert.Equal(3, result.Businesses[0].Id);
+        Assert.False(result.HasMore);
+        Assert.Null(result.NextCursor);
     }
 
     [Theory]
-    [InlineData(0, 20)]
-    [InlineData(1, 0)]
-    [InlineData(1, 101)]
-    [InlineData(int.MaxValue, 2)]
-    public async Task ListAsync_InvalidPaging_ThrowsArgumentOutOfRange(int page, int pageSize)
+    [InlineData(-1, 20)]
+    [InlineData(0, 0)]
+    [InlineData(0, 101)]
+    public async Task ListAsync_InvalidPaging_ThrowsArgumentOutOfRange(long after, int pageSize)
     {
         var sut = CreateSut();
 
         await Assert.ThrowsAsync<ArgumentOutOfRangeException>(
-            () => sut.ListAsync(page, pageSize, CancellationToken.None));
+            () => sut.ListAsync(after, pageSize, CancellationToken.None));
     }
 
     [Fact]
@@ -102,7 +114,7 @@ public class BusinessServiceTests
             client);
         using var cancellationSource = new CancellationTokenSource();
 
-        await sut.ListAsync(1, 20, cancellationSource.Token);
+        await sut.ListAsync(0, 20, cancellationSource.Token);
 
         Assert.Equal(cancellationSource.Token, client.LastCancellationToken);
     }

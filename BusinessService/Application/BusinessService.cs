@@ -27,12 +27,12 @@ public class BusinessService : IBusinessService
         return await _repo.GetAllBusinessesByIdsAsync(ids, cancellationToken);
     }
 
-    public async Task<(List<BusinessModel> Businesses, long Total)> GetBusinessesAsync(
+    public async Task<(List<BusinessModel> Businesses, long Total, bool HasMore)> GetBusinessesAsync(
         int limit,
-        int offset,
+        long after,
         CancellationToken cancellationToken)
     {
-        return await _repo.GetBusinessesAsync(limit, offset, cancellationToken);
+        return await _repo.GetBusinessesAsync(limit, after, cancellationToken);
     }
 
     public async Task<BusinessModel?> CreateBusinessAsync(
@@ -55,7 +55,6 @@ public class BusinessService : IBusinessService
 
     public async Task<bool> DeleteBusinessByIdAsync(long id, CancellationToken cancellationToken)
     {
-        var response = await _repo.DeleteBusinessByIdAsync(id, cancellationToken);
-        return response != false;
+        return await _repo.DeleteBusinessByIdAsync(id, cancellationToken);
     }
 }

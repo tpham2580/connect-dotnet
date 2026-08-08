@@ -20,38 +20,28 @@ public class BusinessService : IBusinessService
     }
 
     public async Task<BusinessListResponse> ListAsync(
-        int page,
+        long after,
         int pageSize,
         CancellationToken cancellationToken)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThan(page, 1);
+        ArgumentOutOfRangeException.ThrowIfNegative(after);
         ArgumentOutOfRangeException.ThrowIfLessThan(pageSize, 1);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(pageSize, MaxPageSize);
 
-        var longOffset = (long)(page - 1) * pageSize;
-        if (longOffset > int.MaxValue)
-        {
-            throw new ArgumentOutOfRangeException(
-                nameof(page),
-                page,
-                "The requested page exceeds the supported paging range.");
-        }
-
-        var offset = (int)longOffset;
-
-        _logger.LogInformation("Listing businesses. Page: {Page}, PageSize: {PageSize}", page, pageSize);
+        _logger.LogInformation("Listing businesses. After: {After}, PageSize: {PageSize}", after, pageSize);
 
         var grpcResponse = await _client.ListBusinessesAsync(new GrpcBusiness.ListBusinessesRequest
         {
             Limit = pageSize,
-            Offset = offset
+            After = after
         }, cancellationToken: cancellationToken);
 
         return new BusinessListResponse
         {
-            Page = page,
             PageSize = pageSize,
             Total = grpcResponse.Total,
+            HasMore = grpcResponse.HasMore,
+            NextCursor = grpcResponse.HasMore ? grpcResponse.NextCursor : null,
             Businesses = grpcResponse.Businesses.Select(ToResponse).ToList()
         };
     }

@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using Grpc.Core;
 using RestAPI.Dtos;
 using GrpcBusiness = Grpc.BusinessService;
 
@@ -33,7 +34,7 @@ public class BusinessControllerTests
     };
 
     [Fact]
-    public async Task GetBusinesses_ReturnsPagedResults()
+    public async Task GetBusinesses_ReturnsFirstPage()
     {
         await using var factory = new BusinessApiFactory(new[]
         {
@@ -42,20 +43,21 @@ public class BusinessControllerTests
         });
         var client = factory.CreateClient();
 
-        var response = await client.GetAsync("/v1/businesses?page=1&pageSize=10");
+        var response = await client.GetAsync("/v1/businesses?pageSize=10");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
         var body = await response.Content.ReadFromJsonAsync<BusinessListResponse>();
         Assert.NotNull(body);
         Assert.Equal(2, body!.Total);
-        Assert.Equal(1, body.Page);
         Assert.Equal(10, body.PageSize);
         Assert.Equal(2, body.Businesses.Count);
+        Assert.False(body.HasMore);
+        Assert.Null(body.NextCursor);
     }
 
     [Fact]
-    public async Task GetBusinesses_HonorsPaging()
+    public async Task GetBusinesses_WalksPagesUsingCursor()
     {
         await using var factory = new BusinessApiFactory(new[]
         {
@@ -65,22 +67,31 @@ public class BusinessControllerTests
         });
         var client = factory.CreateClient();
 
-        var response = await client.GetAsync("/v1/businesses?page=2&pageSize=2");
+        var firstResponse = await client.GetAsync("/v1/businesses?pageSize=2");
+        Assert.Equal(HttpStatusCode.OK, firstResponse.StatusCode);
 
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var first = await firstResponse.Content.ReadFromJsonAsync<BusinessListResponse>();
+        Assert.NotNull(first);
+        Assert.Equal(3, first!.Total);
+        Assert.Equal(2, first.Businesses.Count);
+        Assert.True(first.HasMore);
+        Assert.Equal(2, first.NextCursor);
 
-        var body = await response.Content.ReadFromJsonAsync<BusinessListResponse>();
-        Assert.NotNull(body);
-        Assert.Equal(3, body!.Total);
-        Assert.Single(body.Businesses);
-        Assert.Equal(3, body.Businesses[0].Id);
+        var secondResponse = await client.GetAsync($"/v1/businesses?after={first.NextCursor}&pageSize=2");
+        Assert.Equal(HttpStatusCode.OK, secondResponse.StatusCode);
+
+        var second = await secondResponse.Content.ReadFromJsonAsync<BusinessListResponse>();
+        Assert.NotNull(second);
+        Assert.Single(second!.Businesses);
+        Assert.Equal(3, second.Businesses[0].Id);
+        Assert.False(second.HasMore);
+        Assert.Null(second.NextCursor);
     }
 
     [Theory]
-    [InlineData("/v1/businesses?page=0&pageSize=20")]
-    [InlineData("/v1/businesses?page=1&pageSize=0")]
-    [InlineData("/v1/businesses?page=1&pageSize=101")]
-    [InlineData("/v1/businesses?page=2147483647&pageSize=2")]
+    [InlineData("/v1/businesses?after=-1&pageSize=20")]
+    [InlineData("/v1/businesses?pageSize=0")]
+    [InlineData("/v1/businesses?pageSize=101")]
     public async Task GetBusinesses_WithInvalidPaging_Returns400(string requestUri)
     {
         await using var factory = new BusinessApiFactory();
@@ -89,6 +100,23 @@ public class BusinessControllerTests
         var response = await client.GetAsync(requestUri);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetBusinesses_WithCursorPastTheEnd_ReturnsEmptyPage()
+    {
+        await using var factory = new BusinessApiFactory(new[] { SeedBusiness(1, "Alpha") });
+        var client = factory.CreateClient();
+
+        var response = await client.GetAsync("/v1/businesses?after=1000");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var body = await response.Content.ReadFromJsonAsync<BusinessListResponse>();
+        Assert.NotNull(body);
+        Assert.Empty(body!.Businesses);
+        Assert.False(body.HasMore);
+        Assert.Null(body.NextCursor);
     }
 
     [Fact]
@@ -208,5 +236,77 @@ public class BusinessControllerTests
         var response = await client.DeleteAsync("/v1/businesses/99999");
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Theory]
+    [InlineData("GET")]
+    [InlineData("PUT")]
+    [InlineData("DELETE")]
+    public async Task Routes_WithNonPositiveId_Return404_InsteadOfServerError(string method)
+    {
+        await using var factory = new BusinessApiFactory();
+        var client = factory.CreateClient();
+
+        foreach (var id in new[] { "0", "-1" })
+        {
+            var request = new HttpRequestMessage(new HttpMethod(method), $"/v1/businesses/{id}");
+            if (method != "GET" && method != "DELETE")
+            {
+                request.Content = JsonContent.Create(ValidRequest());
+            }
+
+            var response = await client.SendAsync(request);
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+    }
+
+    [Theory]
+    [InlineData(StatusCode.InvalidArgument, HttpStatusCode.BadRequest)]
+    [InlineData(StatusCode.NotFound, HttpStatusCode.NotFound)]
+    [InlineData(StatusCode.AlreadyExists, HttpStatusCode.Conflict)]
+    [InlineData(StatusCode.PermissionDenied, HttpStatusCode.Forbidden)]
+    [InlineData(StatusCode.Unavailable, HttpStatusCode.ServiceUnavailable)]
+    [InlineData(StatusCode.DeadlineExceeded, HttpStatusCode.GatewayTimeout)]
+    [InlineData(StatusCode.Internal, HttpStatusCode.InternalServerError)]
+    public async Task DownstreamGrpcFailure_IsMappedToHttpStatus(
+        StatusCode grpcStatus,
+        HttpStatusCode expected)
+    {
+        await using var factory = new BusinessApiFactory();
+        factory.Client.FailWith = new RpcException(new Status(grpcStatus, "upstream detail"));
+        var client = factory.CreateClient();
+
+        var response = await client.GetAsync("/v1/businesses");
+
+        Assert.Equal(expected, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task DownstreamInvalidArgument_OnCreate_Returns400WithUpstreamDetail()
+    {
+        await using var factory = new BusinessApiFactory();
+        factory.Client.FailWith = new RpcException(
+            new Status(StatusCode.InvalidArgument, "Name is required."));
+        var client = factory.CreateClient();
+
+        var response = await client.PostAsJsonAsync("/v1/businesses", ValidRequest());
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Contains("Name is required.", await response.Content.ReadAsStringAsync());
+    }
+
+    [Fact]
+    public async Task DownstreamServerFailure_DoesNotLeakInternalDetail()
+    {
+        await using var factory = new BusinessApiFactory();
+        factory.Client.FailWith = new RpcException(
+            new Status(StatusCode.Unavailable, "connection refused to 10.0.0.5:6001"));
+        var client = factory.CreateClient();
+
+        var response = await client.GetAsync("/v1/businesses");
+
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
+        Assert.DoesNotContain("10.0.0.5", await response.Content.ReadAsStringAsync());
     }
 }

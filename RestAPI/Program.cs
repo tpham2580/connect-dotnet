@@ -1,5 +1,5 @@
-using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.OpenApi.Models;
+using RestAPI.Infrastructure;
 using RestAPI.Services;
 using Serilog;
 
@@ -32,6 +32,8 @@ builder.Services
 // Services
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddControllers();
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<RpcExceptionHandler>();
 builder.Services.AddScoped<ILocationSearchService, LocationSearchService>();
 builder.Services.AddScoped<IBusinessService, BusinessService>();
 builder.Services.AddSwaggerGen(o =>
@@ -41,6 +43,10 @@ builder.Services.AddSwaggerGen(o =>
 
 var app = builder.Build();
 
+// Runs in every environment so downstream gRPC failures map to accurate status codes
+// and internal exception messages are never echoed to callers.
+app.UseExceptionHandler();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -48,7 +54,6 @@ if (app.Environment.IsDevelopment())
 }
 else
 {
-    app.UseExceptionHandler("/error");
     app.UseHsts(); // Strict Transport Security header
 }
 
@@ -56,13 +61,6 @@ else
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
-
-// Global error endpoint
-app.Map("/error", (HttpContext context) =>
-{
-    var error = context.Features.Get<IExceptionHandlerFeature>()?.Error;
-    return Results.Problem(error?.Message);
-});
 
 app.Run();
 

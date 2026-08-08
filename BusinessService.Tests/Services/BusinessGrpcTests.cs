@@ -44,7 +44,7 @@ public class BusinessGrpcTests
         var sut = CreateSut(fake);
 
         await sut.ListBusinesses(
-            new ListBusinessesRequest { Limit = 0, Offset = 0 },
+            new ListBusinessesRequest { Limit = 0, After = 0 },
             TestServerCallContext.Create());
 
         Assert.Equal(100, fake.LastLimit);
@@ -57,43 +57,77 @@ public class BusinessGrpcTests
         var sut = CreateSut(fake);
 
         await sut.ListBusinesses(
-            new ListBusinessesRequest { Limit = 500, Offset = 0 },
+            new ListBusinessesRequest { Limit = 500, After = 0 },
             TestServerCallContext.Create());
 
         Assert.Equal(100, fake.LastLimit);
     }
 
     [Fact]
-    public async Task ListBusinesses_ClampsNegativeOffset_ToZero()
+    public async Task ListBusinesses_ClampsNegativeCursor_ToZero()
     {
         var fake = new FakeBusinessAppService();
         var sut = CreateSut(fake);
 
         await sut.ListBusinesses(
-            new ListBusinessesRequest { Limit = 10, Offset = -5 },
+            new ListBusinessesRequest { Limit = 10, After = -5 },
             TestServerCallContext.Create());
 
-        Assert.Equal(0, fake.LastOffset);
+        Assert.Equal(0, fake.LastAfter);
     }
 
     [Fact]
-    public async Task ListBusinesses_PassesValidPaging_AndMapsTotal()
+    public async Task ListBusinesses_PassesCursor_AndMapsTotal()
     {
         var fake = new FakeBusinessAppService
         {
-            ListResult = (new List<BusinessModelEntity> { Model(1) }, 7)
+            ListResult = (new List<BusinessModelEntity> { Model(1) }, 7, false)
         };
         var sut = CreateSut(fake);
 
         var response = await sut.ListBusinesses(
-            new ListBusinessesRequest { Limit = 50, Offset = 10 },
+            new ListBusinessesRequest { Limit = 50, After = 10 },
             TestServerCallContext.Create());
 
         Assert.Equal(50, fake.LastLimit);
-        Assert.Equal(10, fake.LastOffset);
+        Assert.Equal(10, fake.LastAfter);
         Assert.Equal(7, response.Total);
         Assert.Single(response.Businesses);
         Assert.Equal(1, response.Businesses[0].Id);
+    }
+
+    [Fact]
+    public async Task ListBusinesses_SetsNextCursor_ToLastId_WhenMorePagesExist()
+    {
+        var fake = new FakeBusinessAppService
+        {
+            ListResult = (new List<BusinessModelEntity> { Model(1), Model(4) }, 9, true)
+        };
+        var sut = CreateSut(fake);
+
+        var response = await sut.ListBusinesses(
+            new ListBusinessesRequest { Limit = 2 },
+            TestServerCallContext.Create());
+
+        Assert.True(response.HasMore);
+        Assert.Equal(4, response.NextCursor);
+    }
+
+    [Fact]
+    public async Task ListBusinesses_LeavesNextCursorUnset_OnLastPage()
+    {
+        var fake = new FakeBusinessAppService
+        {
+            ListResult = (new List<BusinessModelEntity> { Model(1) }, 1, false)
+        };
+        var sut = CreateSut(fake);
+
+        var response = await sut.ListBusinesses(
+            new ListBusinessesRequest { Limit = 2 },
+            TestServerCallContext.Create());
+
+        Assert.False(response.HasMore);
+        Assert.Equal(0, response.NextCursor);
     }
 
     [Fact]

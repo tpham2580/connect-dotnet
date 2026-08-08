@@ -6,7 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>
-    <Protobuf Include="Protos\location.proto" GrpcServices="Server" />
+    <Protobuf Include="..\Protos\location.proto" ProtoRoot=".." GrpcServices="Server" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Calzolari.Grpc.AspNetCore.Validation" Version="8.1.0" />

@@ -7,6 +7,7 @@ WORKDIR /src
 
 
 COPY BusinessService/BusinessService.csproj BusinessService/
+COPY Protos/ Protos/
 RUN dotnet restore BusinessService/BusinessService.csproj
 
 COPY BusinessService/ BusinessService/

@@ -7,9 +7,10 @@ namespace RestAPI.Controllers;
 
 [ApiController]
 [Route("v1/businesses")]
+[Produces("application/json")]
 public class BusinessController : ControllerBase
 {
-    private const int DefaultPage = 1;
+    private const long DefaultAfter = 0;
     private const int DefaultPageSize = 20;
     private const int MaxPageSize = 100;
 
@@ -22,25 +23,25 @@ public class BusinessController : ControllerBase
         _logger = logger;
     }
 
+    /// <summary>
+    /// Lists businesses using keyset pagination. Pass the previous response's
+    /// <c>nextCursor</c> as <c>after</c> to fetch the following page.
+    /// </summary>
     [HttpGet]
+    [ProducesResponseType(typeof(BusinessListResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetBusinesses(
-        [FromQuery, Range(1, int.MaxValue)] int page = DefaultPage,
+        [FromQuery, Range(0, long.MaxValue)] long after = DefaultAfter,
         [FromQuery, Range(1, MaxPageSize)] int pageSize = DefaultPageSize,
         CancellationToken cancellationToken = default)
     {
-        if ((long)(page - 1) * pageSize > int.MaxValue)
-        {
-            ModelState.AddModelError(
-                nameof(page),
-                "The requested page exceeds the supported paging range.");
-            return ValidationProblem(ModelState);
-        }
-
-        var response = await _businessService.ListAsync(page, pageSize, cancellationToken);
+        var response = await _businessService.ListAsync(after, pageSize, cancellationToken);
         return Ok(response);
     }
 
-    [HttpGet("{id:long}")]
+    [HttpGet("{id:long:min(1)}")]
+    [ProducesResponseType(typeof(BusinessResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById(long id, CancellationToken cancellationToken)
     {
         var business = await _businessService.GetByIdAsync(id, cancellationToken);
@@ -53,6 +54,8 @@ public class BusinessController : ControllerBase
     }
 
     [HttpPost]
+    [ProducesResponseType(typeof(BusinessResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Create(
         [FromBody] BusinessRequest request,
         CancellationToken cancellationToken)
@@ -61,7 +64,10 @@ public class BusinessController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 
-    [HttpPut("{id:long}")]
+    [HttpPut("{id:long:min(1)}")]
+    [ProducesResponseType(typeof(BusinessResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Update(
         long id,
         [FromBody] BusinessRequest request,
@@ -76,7 +82,9 @@ public class BusinessController : ControllerBase
         return Ok(updated);
     }
 
-    [HttpDelete("{id:long}")]
+    [HttpDelete("{id:long:min(1)}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(long id, CancellationToken cancellationToken)
     {
         var deleted = await _businessService.DeleteAsync(id, cancellationToken);

@@ -53,14 +53,19 @@ public class BusinessGrpc : Grpc.BusinessService.BusinessService.BusinessService
     public override async Task<ListBusinessesResponse> ListBusinesses(ListBusinessesRequest request, ServerCallContext context)
     {
         var limit = request.Limit <= 0 ? DefaultPageSize : Math.Min(request.Limit, MaxPageSize);
-        var offset = request.Offset < 0 ? 0 : request.Offset;
+        var after = request.After < 0 ? 0 : request.After;
 
-        var (businesses, total) = await _service.GetBusinessesAsync(
+        var (businesses, total, hasMore) = await _service.GetBusinessesAsync(
             limit,
-            offset,
+            after,
             context.CancellationToken);
 
-        var response = new ListBusinessesResponse { Total = total };
+        var response = new ListBusinessesResponse
+        {
+            Total = total,
+            HasMore = hasMore,
+            NextCursor = hasMore && businesses.Count > 0 ? businesses[^1].Id ?? 0 : 0
+        };
         response.Businesses.AddRange(businesses.Select(BusinessMapper.ToGrpc));
         return response;
     }

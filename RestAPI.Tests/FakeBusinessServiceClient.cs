@@ -15,6 +15,12 @@ public class FakeBusinessServiceClient : GrpcBusiness.BusinessService.BusinessSe
 
     public CancellationToken LastCancellationToken { get; private set; }
 
+    /// <summary>
+    /// When set, every call fails with this exception. Used to exercise how the REST layer
+    /// translates downstream gRPC failures into HTTP status codes.
+    /// </summary>
+    public RpcException? FailWith { get; set; }
+
     public FakeBusinessServiceClient(IEnumerable<GrpcBusiness.Business>? seed = null)
     {
         if (seed == null)
@@ -37,11 +43,28 @@ public class FakeBusinessServiceClient : GrpcBusiness.BusinessService.BusinessSe
     {
         LastCancellationToken = options.CancellationToken;
 
+        if (FailWith != null)
+        {
+            return Failure<GrpcBusiness.ListBusinessesResponse>(FailWith);
+        }
+
         var ordered = _store.Values.OrderBy(b => b.Id).ToList();
         var limit = request.Limit <= 0 ? ordered.Count : request.Limit;
-        var page = ordered.Skip(request.Offset).Take(limit);
 
-        var response = new GrpcBusiness.ListBusinessesResponse { Total = ordered.Count };
+        // Mirrors the server: read one extra row to decide whether another page exists.
+        var page = ordered.Where(b => b.Id > request.After).Take(limit + 1).ToList();
+        var hasMore = page.Count > limit;
+        if (hasMore)
+        {
+            page.RemoveAt(page.Count - 1);
+        }
+
+        var response = new GrpcBusiness.ListBusinessesResponse
+        {
+            Total = ordered.Count,
+            HasMore = hasMore,
+            NextCursor = hasMore && page.Count > 0 ? page[^1].Id : 0
+        };
         response.Businesses.AddRange(page);
         return Success(response);
     }
@@ -49,6 +72,11 @@ public class FakeBusinessServiceClient : GrpcBusiness.BusinessService.BusinessSe
     public override AsyncUnaryCall<GrpcBusiness.BusinessResponse> GetBusinessByIdAsync(
         GrpcBusiness.BusinessByIdRequest request, CallOptions options)
     {
+        if (FailWith != null)
+        {
+            return Failure<GrpcBusiness.BusinessResponse>(FailWith);
+        }
+
         if (_store.TryGetValue(request.Id, out var business))
         {
             return Success(new GrpcBusiness.BusinessResponse { Business = business });
@@ -61,6 +89,11 @@ public class FakeBusinessServiceClient : GrpcBusiness.BusinessService.BusinessSe
     public override AsyncUnaryCall<GrpcBusiness.BusinessResponse> CreateBusinessAsync(
         GrpcBusiness.CreateBusinessRequest request, CallOptions options)
     {
+        if (FailWith != null)
+        {
+            return Failure<GrpcBusiness.BusinessResponse>(FailWith);
+        }
+
         var id = Interlocked.Increment(ref _nextId);
         var created = new GrpcBusiness.Business
         {
@@ -81,6 +114,11 @@ public class FakeBusinessServiceClient : GrpcBusiness.BusinessService.BusinessSe
     public override AsyncUnaryCall<GrpcBusiness.BusinessResponse> UpdateBusinessAsync(
         GrpcBusiness.UpdateBusinessRequest request, CallOptions options)
     {
+        if (FailWith != null)
+        {
+            return Failure<GrpcBusiness.BusinessResponse>(FailWith);
+        }
+
         var id = request.Business.Id;
         if (!_store.ContainsKey(id))
         {
@@ -107,6 +145,11 @@ public class FakeBusinessServiceClient : GrpcBusiness.BusinessService.BusinessSe
     public override AsyncUnaryCall<GrpcBusiness.DeleteItemByIdResponse> DeleteBusinessAsync(
         GrpcBusiness.BusinessByIdRequest request, CallOptions options)
     {
+        if (FailWith != null)
+        {
+            return Failure<GrpcBusiness.DeleteItemByIdResponse>(FailWith);
+        }
+
         if (_store.TryRemove(request.Id, out _))
         {
             return Success(new GrpcBusiness.DeleteItemByIdResponse { Success = true });

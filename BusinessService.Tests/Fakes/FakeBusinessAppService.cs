@@ -11,10 +11,11 @@ namespace BusinessService.Tests.Fakes;
 internal sealed class FakeBusinessAppService : IBusinessService
 {
     public int? LastLimit { get; private set; }
-    public int? LastOffset { get; private set; }
+    public long? LastAfter { get; private set; }
     public CancellationToken LastCancellationToken { get; private set; }
 
-    public (List<BusinessModel> Businesses, long Total) ListResult { get; set; } = (new List<BusinessModel>(), 0);
+    public (List<BusinessModel> Businesses, long Total, bool HasMore) ListResult { get; set; } =
+        (new List<BusinessModel>(), 0, false);
     public BusinessModel? GetByIdResult { get; set; }
     public BusinessModel? CreateResult { get; set; }
     public BusinessModel? UpdateResult { get; set; }
@@ -28,13 +29,13 @@ internal sealed class FakeBusinessAppService : IBusinessService
         CancellationToken cancellationToken) =>
         Task.FromResult(new List<BusinessModel>());
 
-    public Task<(List<BusinessModel> Businesses, long Total)> GetBusinessesAsync(
+    public Task<(List<BusinessModel> Businesses, long Total, bool HasMore)> GetBusinessesAsync(
         int limit,
-        int offset,
+        long after,
         CancellationToken cancellationToken)
     {
         LastLimit = limit;
-        LastOffset = offset;
+        LastAfter = after;
         LastCancellationToken = cancellationToken;
         return Task.FromResult(ListResult);
     }

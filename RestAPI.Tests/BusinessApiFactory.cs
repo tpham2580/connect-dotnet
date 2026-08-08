@@ -13,11 +13,15 @@ namespace RestAPI.Tests;
 /// </summary>
 public class BusinessApiFactory : WebApplicationFactory<Program>
 {
-    private readonly IEnumerable<GrpcBusiness.Business>? _seed;
+    /// <summary>
+    /// The fake gRPC backend the API runs against. Mutate it from a test to drive behaviour,
+    /// e.g. set <see cref="FakeBusinessServiceClient.FailWith"/> to simulate a downstream failure.
+    /// </summary>
+    public FakeBusinessServiceClient Client { get; }
 
     public BusinessApiFactory(IEnumerable<GrpcBusiness.Business>? seed = null)
     {
-        _seed = seed;
+        Client = new FakeBusinessServiceClient(seed);
     }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -29,8 +33,7 @@ public class BusinessApiFactory : WebApplicationFactory<Program>
         builder.ConfigureTestServices(services =>
         {
             services.RemoveAll<GrpcBusiness.BusinessService.BusinessServiceClient>();
-            services.AddSingleton<GrpcBusiness.BusinessService.BusinessServiceClient>(
-                new FakeBusinessServiceClient(_seed));
+            services.AddSingleton<GrpcBusiness.BusinessService.BusinessServiceClient>(Client);
         });
     }
 }
