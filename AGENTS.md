@@ -76,6 +76,31 @@ Read the guides before lifecycle actions: `backlog instructions overview`, then
 - Keep shared agent files (`AGENTS.md`, `scripts/`, `backlog/`, `.github/copilot-instructions.md`)
   updated on `master`, then rebase task branches on top to propagate them.
 
+## Backlog + worktrees (read before editing tasks)
+
+`backlog/` is **tracked**, so every worktree checks out its own copy of the board. The single
+source of truth is git history, but the *working copies* diverge until branches merge.
+
+Rules that keep that divergence harmless:
+
+- **Edit only your own task inside your own worktree.** A worker owns exactly the task it was
+  briefed with. Never edit another task from a worktree — do that from the root on `master`.
+- **Board-wide changes happen at the root** on `master`: creating tasks, closing unrelated
+  tasks, editing `backlog/config.yml`, or reordering the board.
+- **Never run `backlog task edit` for a branch's task from the root.** The root holds `master`'s
+  older copy, so the edit lands on the wrong version and gets clobbered on merge.
+- Your task's file rides along in your PR, so task state is reviewed with the code.
+
+Cross-branch visibility is **enabled** (`check_active_branches: true`, `filesystem_only: false`
+in `backlog/config.yml`). This lets a worktree resolve tasks that live only on other branches —
+e.g. `backlog task view TASK-10` works from a worktree even when that file exists only on
+`master`. Without it the lookup fails outright, and `backlog task create` re-uses an existing ID
+because it only sees the local checkout. Leave these enabled; if IDs ever collide anyway, repair
+with `backlog doctor --fix`.
+
+Note `backlog task list` / `backlog board` still show only the current checkout's tasks. For the
+full board, run them from the root, or use `backlog browser` there.
+
 ## Orchestrator convention (Tmux Orchestrator → workers)
 
 - Run the orchestrator from the root.
@@ -84,3 +109,5 @@ Read the guides before lifecycle actions: `backlog instructions overview`, then
   "start by reading `AGENTS.md` and running `backlog instructions overview`".
 - A worker sets its task **In Progress** on start, works only inside its worktree, and drives
   the task to **Done** via the Backlog CLI. One task per worker; don't silently expand scope.
+- A worker edits **only its own task file**; board-wide Backlog changes are the orchestrator's
+  job, made at the root (see "Backlog + worktrees").
