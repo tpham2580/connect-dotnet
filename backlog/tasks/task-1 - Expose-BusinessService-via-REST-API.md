@@ -1,10 +1,10 @@
 ---
 id: TASK-1
 title: Expose BusinessService via REST API
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-07-23 01:58'
-updated_date: '2026-08-08 04:44'
+updated_date: '2026-08-08 05:30'
 labels:
   - backend
   - api
@@ -24,13 +24,13 @@ Add REST endpoints (CRUD) for BusinessService so external clients can manage bus
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 GET /v1/businesses returns paged results
-- [ ] #2 POST /v1/businesses validates payload and returns 201
-- [ ] #3 Integration tests cover happy path and 400/404
-- [ ] #4 GET /v1/businesses/{id} returns 200 with the business or 404 when unknown
-- [ ] #5 PUT /v1/businesses/{id} updates a business (200) and returns 404 for an unknown id
-- [ ] #6 DELETE /v1/businesses/{id} removes a business (204) and returns 404 for an unknown id
-- [ ] #7 Unit tests cover ListBusinesses paging guards and the RestAPI BusinessService gRPC mapping
+- [x] #1 GET /v1/businesses returns paged results
+- [x] #2 POST /v1/businesses validates payload and returns 201
+- [x] #3 Integration tests cover happy path and 400/404
+- [x] #4 GET /v1/businesses/{id} returns 200 with the business or 404 when unknown
+- [x] #5 PUT /v1/businesses/{id} updates a business (200) and returns 404 for an unknown id
+- [x] #6 DELETE /v1/businesses/{id} removes a business (204) and returns 404 for an unknown id
+- [x] #7 Unit tests cover ListBusinesses paging guards and the RestAPI BusinessService gRPC mapping
 <!-- AC:END -->
 
 ## Implementation Plan
@@ -72,4 +72,22 @@ Addressed PR #9 review (human-directed, all items approved incl. keyset paging a
 - Nit: simplified 'response != false' in Application.BusinessService.DeleteBusinessByIdAsync.
 - Deliberately NOT changed: 'required' on BusinessModel.Latitude/Longitude was left in place; removing it would let a model be constructed with a silent 0,0 default, which is worse than the cosmetic concern raised in review.
 Validation: solution builds with no new warnings; 53 tests pass (RestAPI.Tests 39, BusinessService.Tests 14), 0 failed.
+
+AC verification (2026-08-07, branch @ 3479b8b, merged as b479fa3): `dotnet test MySolution.sln` -> 53/53 passed (BusinessService.Tests 14, RestAPI.Tests 39), 0 failed. Integration tests boot the API in-memory via WebApplicationFactory<Program> with the gRPC backend faked (RestAPI.Tests/BusinessApiFactory.cs).
+
+- AC1 paged list (keyset): GetBusinesses_ReturnsFirstPage, GetBusinesses_WalksPagesUsingCursor, GetBusinesses_WithCursorPastTheEnd_ReturnsEmptyPage.
+- AC2 POST 201 + validation: CreateBusiness_WithValidPayload_Returns201AndIsRetrievable (201 + Location + re-GET), CreateBusiness_WithInvalidPayload_Returns400.
+- AC3 happy/400/404: 400 via GetBusinesses_WithInvalidPaging_Returns400 (pageSize 0/101, after=-1) and Create/Update_WithInvalidPayload_Returns400; 404 via GetBusinessById/UpdateBusiness/DeleteBusiness_WithUnknownId_Returns404 and Routes_WithNonPositiveId_Return404_InsteadOfServerError (GET/PUT/DELETE).
+- AC4 GET by id: 404 via GetBusinessById_WithUnknownId_Returns404; 200 asserted inside CreateBusiness_WithValidPayload_Returns201AndIsRetrievable (BusinessControllerTests.cs:139) and UpdateBusiness_WithValidPayload_Returns200AndPersists.
+- AC5 PUT: UpdateBusiness_WithValidPayload_Returns200AndPersists, UpdateBusiness_WithUnknownId_Returns404.
+- AC6 DELETE: DeleteBusiness_WithExistingId_Returns204AndIsGone, DeleteBusiness_WithUnknownId_Returns404.
+- AC7 unit coverage: BusinessGrpcTests ListBusinesses_{CapsLimit_AtMax,DefaultsLimit_WhenNonPositive,ClampsNegativeCursor_ToZero,SetsNextCursor_ToLastId_WhenMorePagesExist,LeavesNextCursorUnset_OnLastPage,PassesCursor_AndMapsTotal}; RestAPI BusinessServiceTests mapping (GetByIdAsync_KnownId_MapsAllFields, ListAsync_MapsCursorAndTotal, CreateAsync_ReturnsMappedResponseWithGeneratedId, Update/DeleteAsync NotFound -> null/false).
+
+Note AC1's contract changed during the PR #9 review follow-up: offset paging (page/pageSize) was replaced by keyset paging (GET /v1/businesses?after&pageSize -> {pageSize,total,nextCursor,businesses}). The residual COUNT(*) cost of 'total' is tracked separately as TASK-10. CI run 31241424381 green on the merged head.
 <!-- SECTION:NOTES:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Exposed BusinessService over HTTP as a versioned REST API (RestAPI/Controllers/BusinessController.cs, route v1/businesses) backed by a typed gRPC client wrapper and immutable DTOs. Full CRUD: keyset-paginated list, GET by id, POST (201 + Location), PUT, DELETE, with paging guards (pageSize 1..100, non-negative cursor), non-positive route ids rejected as 404, and gRPC status codes mapped to HTTP (InvalidArgument 400, NotFound 404, PermissionDenied 403, Unavailable 503, DeadlineExceeded 504, else 500) without leaking upstream detail. Protos consolidated into a shared top-level /Protos. Verified with dotnet test MySolution.sln: 53/53 pass (RestAPI.Tests 39, BusinessService.Tests 14), covering every acceptance criterion by name; CI green. Merged via PR #9 as b479fa3. Follow-up tracked in TASK-10 (avoid O(n) COUNT(*) behind the 'total' field).
+<!-- SECTION:FINAL_SUMMARY:END -->
