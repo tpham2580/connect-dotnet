@@ -4,13 +4,13 @@ title: Expose BusinessService via REST API
 status: In Progress
 assignee: []
 created_date: '2026-07-23 01:58'
-updated_date: '2026-08-08 03:07'
+updated_date: '2026-08-08 04:44'
 labels:
   - backend
   - api
 dependencies: []
 references:
-  - 'https://github.com/tpham2580/connect-dotnet/pull/42'
+  - 'https://github.com/tpham2580/connect-dotnet/pull/9'
   - 'https://github.com/tpham2580/connect-dotnet/tree/restapi-businessservice'
 priority: high
 ordinal: 1000
