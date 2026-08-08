@@ -6,10 +6,13 @@ namespace BusinessService.Services;
 
 public class BusinessGrpc : Grpc.BusinessService.BusinessService.BusinessServiceBase
 {
-    private readonly ILogger<BusinessGrpc> _log;
-    private readonly BusinessService.Application.BusinessService _service;
+    private const int DefaultPageSize = 100;
+    private const int MaxPageSize = 100;
 
-    public BusinessGrpc(ILogger<BusinessGrpc> log, BusinessService.Application.BusinessService service)
+    private readonly ILogger<BusinessGrpc> _log;
+    private readonly IBusinessService _service;
+
+    public BusinessGrpc(ILogger<BusinessGrpc> log, IBusinessService service)
     {
         _log = log;
         _service = service;
@@ -17,7 +20,7 @@ public class BusinessGrpc : Grpc.BusinessService.BusinessService.BusinessService
 
     public override async Task<BusinessResponse> GetBusinessById(BusinessByIdRequest request, ServerCallContext context)
     {
-        var response = await _service.GetBusinessByIdAsync(request.Id);
+        var response = await _service.GetBusinessByIdAsync(request.Id, context.CancellationToken);
 
         if (response == null)
         {
@@ -37,12 +40,34 @@ public class BusinessGrpc : Grpc.BusinessService.BusinessService.BusinessService
             throw new RpcException(new Status(StatusCode.InvalidArgument, "List of business IDs must not be empty."));
         }
 
-        var response = await _service.GetAllBusinessesByIdsAsync(request.Ids.ToList());
+        var response = await _service.GetAllBusinessesByIdsAsync(
+            request.Ids.ToList(),
+            context.CancellationToken);
 
         return new GetAllBusinessesByIdsResponse
         {
             Businesses = { response.Select(BusinessMapper.ToGrpc) }
         };
+    }
+
+    public override async Task<ListBusinessesResponse> ListBusinesses(ListBusinessesRequest request, ServerCallContext context)
+    {
+        var limit = request.Limit <= 0 ? DefaultPageSize : Math.Min(request.Limit, MaxPageSize);
+        var after = request.After < 0 ? 0 : request.After;
+
+        var (businesses, total, hasMore) = await _service.GetBusinessesAsync(
+            limit,
+            after,
+            context.CancellationToken);
+
+        var response = new ListBusinessesResponse
+        {
+            Total = total,
+            HasMore = hasMore,
+            NextCursor = hasMore && businesses.Count > 0 ? businesses[^1].Id ?? 0 : 0
+        };
+        response.Businesses.AddRange(businesses.Select(BusinessMapper.ToGrpc));
+        return response;
     }
 
     public override async Task<BusinessResponse> CreateBusiness(CreateBusinessRequest request, ServerCallContext context)
@@ -60,7 +85,7 @@ public class BusinessGrpc : Grpc.BusinessService.BusinessService.BusinessService
             throw new RpcException(new Status(StatusCode.InvalidArgument, message));
         }
 
-        var response = await _service.CreateBusinessAsync(business);
+        var response = await _service.CreateBusinessAsync(business, context.CancellationToken);
 
         if (response == null)
         {
@@ -88,11 +113,11 @@ public class BusinessGrpc : Grpc.BusinessService.BusinessService.BusinessService
             throw new RpcException(new Status(StatusCode.InvalidArgument, message));
         }
 
-        var response = await _service.UpdateBusinessAsync(business);
+        var response = await _service.UpdateBusinessAsync(business, context.CancellationToken);
 
         if (response == null)
         {
-            throw new RpcException(new Status(StatusCode.InvalidArgument, $"Unable to update Business. Id not found."));
+            throw new RpcException(new Status(StatusCode.NotFound, $"Business with ID {business.Id} not found."));
         }
 
         return new BusinessResponse
@@ -103,7 +128,7 @@ public class BusinessGrpc : Grpc.BusinessService.BusinessService.BusinessService
 
     public override async Task<DeleteItemByIdResponse> DeleteBusiness(BusinessByIdRequest request, ServerCallContext context)
     {
-        var response = await _service.DeleteBusinessByIdAsync(request.Id);
+        var response = await _service.DeleteBusinessByIdAsync(request.Id, context.CancellationToken);
 
         if (!response)
         {

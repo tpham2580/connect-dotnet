@@ -8,6 +8,7 @@ service BusinessService {
   rpc CreateBusiness(CreateBusinessRequest) returns (BusinessResponse);
   rpc GetBusinessById(BusinessByIdRequest) returns (BusinessResponse);
   rpc GetAllBusinessesByIds(BusinessesByIdsRequest) returns (GetAllBusinessesByIdsResponse);
+  rpc ListBusinesses(ListBusinessesRequest) returns (ListBusinessesResponse);
   rpc UpdateBusiness(UpdateBusinessRequest) returns (BusinessResponse);
   rpc DeleteBusiness(BusinessByIdRequest) returns (DeleteItemByIdResponse);
 }
@@ -51,6 +52,23 @@ message BusinessesByIdsRequest {
 
 message GetAllBusinessesByIdsResponse {
   repeated Business businesses = 1;
+}
+
+message ListBusinessesRequest {
+  // Maximum number of businesses to return. Values <= 0 use the server default;
+  // values above the server maximum are capped.
+  int32 limit = 1;
+  // Exclusive keyset cursor: only businesses with id > after are returned.
+  // 0 starts from the beginning.
+  int64 after = 2;
+}
+
+message ListBusinessesResponse {
+  repeated Business businesses = 1;
+  int64 total = 2;
+  // Value to pass as `after` to fetch the next page. Only meaningful when has_more is true.
+  int64 next_cursor = 3;
+  bool has_more = 4;
 }
 
 message UpdateBusinessRequest {

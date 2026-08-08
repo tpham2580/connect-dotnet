@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BusinessService", "Business
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LocationService", "LocationService\LocationService.csproj", "{FF2A691F-861B-41B5-A9BA-1CC4A5CCF87F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RestAPI.Tests", "RestAPI.Tests\RestAPI.Tests.csproj", "{1A0B8808-42E3-4EF7-AABB-B4A6DF631576}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,5 +38,9 @@ Global
 		{FF2A691F-861B-41B5-A9BA-1CC4A5CCF87F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FF2A691F-861B-41B5-A9BA-1CC4A5CCF87F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FF2A691F-861B-41B5-A9BA-1CC4A5CCF87F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1A0B8808-42E3-4EF7-AABB-B4A6DF631576}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A0B8808-42E3-4EF7-AABB-B4A6DF631576}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1A0B8808-42E3-4EF7-AABB-B4A6DF631576}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1A0B8808-42E3-4EF7-AABB-B4A6DF631576}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

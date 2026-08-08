@@ -7,6 +7,7 @@ WORKDIR /src
 
 
 COPY LocationService/LocationService.csproj LocationService/
+COPY Protos/ Protos/
 RUN dotnet restore LocationService/LocationService.csproj
 
 COPY LocationService/ LocationService/

@@ -1,5 +1,5 @@
-using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.OpenApi.Models;
+using RestAPI.Infrastructure;
 using RestAPI.Services;
 using Serilog;
 
@@ -22,16 +22,30 @@ builder.Services
                                 ?? throw new Exception("Configuration Not Found"));
     });
 
+builder.Services
+    .AddGrpcClient<Grpc.BusinessService.BusinessService.BusinessServiceClient>(options =>
+    {
+        options.Address = new Uri(builder.Configuration["GrpcSettings:BusinessServiceUrl"]
+                                ?? throw new Exception("Configuration Not Found"));
+    });
+
 // Services
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddControllers();
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<RpcExceptionHandler>();
 builder.Services.AddScoped<ILocationSearchService, LocationSearchService>();
+builder.Services.AddScoped<IBusinessService, BusinessService>();
 builder.Services.AddSwaggerGen(o =>
 {
     o.SwaggerDoc("v1", new OpenApiInfo { Title = "Mobile BFF API", Version = "v1" });
 });
 
 var app = builder.Build();
+
+// Runs in every environment so downstream gRPC failures map to accurate status codes
+// and internal exception messages are never echoed to callers.
+app.UseExceptionHandler();
 
 if (app.Environment.IsDevelopment())
 {
@@ -40,7 +54,6 @@ if (app.Environment.IsDevelopment())
 }
 else
 {
-    app.UseExceptionHandler("/error");
     app.UseHsts(); // Strict Transport Security header
 }
 
@@ -49,11 +62,6 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
 
-// Global error endpoint
-app.Map("/error", (HttpContext context) =>
-{
-    var error = context.Features.Get<IExceptionHandlerFeature>()?.Error;
-    return Results.Problem(error?.Message);
-});
-
 app.Run();
+
+public partial class Program { }
