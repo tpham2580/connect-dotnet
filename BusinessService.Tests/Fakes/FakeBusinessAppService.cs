@@ -13,6 +13,8 @@ internal sealed class FakeBusinessAppService : IBusinessService
     public int? LastLimit { get; private set; }
     public long? LastAfter { get; private set; }
     public CancellationToken LastCancellationToken { get; private set; }
+    public int CreateCallCount { get; private set; }
+    public int UpdateCallCount { get; private set; }
 
     public (List<BusinessModel> Businesses, long Total, bool HasMore) ListResult { get; set; } =
         (new List<BusinessModel>(), 0, false);
@@ -42,13 +44,19 @@ internal sealed class FakeBusinessAppService : IBusinessService
 
     public Task<BusinessModel?> CreateBusinessAsync(
         BusinessModel business,
-        CancellationToken cancellationToken) =>
-        Task.FromResult(CreateResult);
+        CancellationToken cancellationToken)
+    {
+        CreateCallCount++;
+        return Task.FromResult(CreateResult);
+    }
 
     public Task<BusinessModel?> UpdateBusinessAsync(
         BusinessModel business,
-        CancellationToken cancellationToken) =>
-        Task.FromResult(UpdateResult);
+        CancellationToken cancellationToken)
+    {
+        UpdateCallCount++;
+        return Task.FromResult(UpdateResult);
+    }
 
     public Task<bool> DeleteBusinessByIdAsync(long id, CancellationToken cancellationToken) =>
         Task.FromResult(DeleteResult);
