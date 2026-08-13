@@ -1,3 +1,4 @@
+using BusinessService.Application;
 using BusinessService.Services;
 using BusinessService.Tests.Fakes;
 using Grpc.BusinessService;
@@ -156,6 +157,46 @@ public class BusinessGrpcTests
                 TestServerCallContext.Create()));
 
         Assert.Equal(StatusCode.NotFound, ex.StatusCode);
+    }
+
+    [Fact]
+    public async Task CreateBusiness_Throws_InvalidArgument_WhenBusinessPayloadMissing()
+    {
+        var fake = new FakeBusinessAppService();
+        var sut = CreateSut(fake);
+
+        var ex = await Assert.ThrowsAsync<RpcException>(() =>
+            sut.CreateBusiness(new CreateBusinessRequest(), TestServerCallContext.Create()));
+
+        Assert.Equal(StatusCode.InvalidArgument, ex.StatusCode);
+        Assert.Equal(0, fake.CreateCallCount);
+    }
+
+    [Fact]
+    public async Task UpdateBusiness_Throws_InvalidArgument_WhenBusinessPayloadMissing()
+    {
+        var fake = new FakeBusinessAppService();
+        var sut = CreateSut(fake);
+
+        var ex = await Assert.ThrowsAsync<RpcException>(() =>
+            sut.UpdateBusiness(new UpdateBusinessRequest(), TestServerCallContext.Create()));
+
+        Assert.Equal(StatusCode.InvalidArgument, ex.StatusCode);
+        Assert.Equal(0, fake.UpdateCallCount);
+    }
+
+    [Fact]
+    public void BusinessMapper_Throws_ArgumentNullException_WhenCreateBusinessPayloadMissing()
+    {
+        Assert.Throws<ArgumentNullException>(() =>
+            BusinessMapper.ToBusinessModel(new CreateBusinessRequest()));
+    }
+
+    [Fact]
+    public void BusinessMapper_Throws_ArgumentNullException_WhenUpdateBusinessPayloadMissing()
+    {
+        Assert.Throws<ArgumentNullException>(() =>
+            BusinessMapper.ToBusinessModel(new UpdateBusinessRequest()));
     }
 
     [Fact]

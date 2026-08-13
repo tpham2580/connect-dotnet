@@ -7,42 +7,46 @@ public static class BusinessMapper
 {
     #region Grpc to Model
 
-    public static BusinessModel ToBusinessModel(Business business) => new BusinessModel
+    public static BusinessModel ToBusinessModel(Business business)
     {
-        Id = business.Id,
-        Name = business.Name,
-        Address = business.Address,
-        City = business.City,
-        State = business.State,
-        Country = business.Country,
-        Latitude = business.Latitude,
-        Longitude = business.Longitude
-    };
+        ArgumentNullException.ThrowIfNull(business);
 
-    public static BusinessModel ToBusinessModel(CreateBusinessRequest request) => new BusinessModel
+        return new BusinessModel
+        {
+            Id = business.Id,
+            Name = business.Name,
+            Address = business.Address,
+            City = business.City,
+            State = business.State,
+            Country = business.Country,
+            Latitude = business.Latitude,
+            Longitude = business.Longitude
+        };
+    }
+
+    public static BusinessModel ToBusinessModel(CreateBusinessRequest request)
     {
-        Name = request.Business.Name,
-        Address = request.Business.Address,
-        City = request.Business.City,
-        State = request.Business.State,
-        Country = request.Business.Country,
-        Latitude = request.Business.Latitude,
-        Longitude = request.Business.Longitude
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(request.Business);
 
-    };
+        return new BusinessModel
+        {
+            Name = request.Business.Name,
+            Address = request.Business.Address,
+            City = request.Business.City,
+            State = request.Business.State,
+            Country = request.Business.Country,
+            Latitude = request.Business.Latitude,
+            Longitude = request.Business.Longitude
+        };
+    }
 
-    public static BusinessModel ToBusinessModel(UpdateBusinessRequest request) => new BusinessModel
+    public static BusinessModel ToBusinessModel(UpdateBusinessRequest request)
     {
-        Id = request.Business.Id,
-        Name = request.Business.Name,
-        Address = request.Business.Address,
-        City = request.Business.City,
-        State = request.Business.State,
-        Country = request.Business.Country,
-        Latitude = request.Business.Latitude,
-        Longitude = request.Business.Longitude
+        ArgumentNullException.ThrowIfNull(request);
 
-    };
+        return ToBusinessModel(request.Business);
+    }
 
     #endregion
 

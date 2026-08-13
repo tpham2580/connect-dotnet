@@ -74,6 +74,11 @@ public class BusinessGrpc : Grpc.BusinessService.BusinessService.BusinessService
     {
         _log.LogInformation("Request received: \n{@request}", request);
 
+        if (request.Business == null)
+        {
+            throw new RpcException(new Status(StatusCode.InvalidArgument, "A business payload is required."));
+        }
+
         var business = BusinessMapper.ToBusinessModel(request);
 
         _log.LogInformation("Request converted to Business Model: \n{@business}", business);
@@ -101,6 +106,11 @@ public class BusinessGrpc : Grpc.BusinessService.BusinessService.BusinessService
     public override async Task<BusinessResponse> UpdateBusiness(UpdateBusinessRequest request, ServerCallContext context)
     {
         _log.LogInformation("Request received: \n{@request}", request);
+
+        if (request.Business == null)
+        {
+            throw new RpcException(new Status(StatusCode.InvalidArgument, "A business payload is required."));
+        }
 
         var business = BusinessMapper.ToBusinessModel(request);
 
