@@ -10,6 +10,8 @@ labels:
   - businessservice
   - bug
 dependencies: []
+references:
+  - 'https://github.com/tpham2580/connect-dotnet/pull/13'
 priority: medium
 ordinal: 6000
 ---
